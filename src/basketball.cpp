@@ -1,7 +1,8 @@
+#include "gltools.h"
+
 #include <GL/glut.h>
 #include <iostream>
 using namespace std;
-
 
 GLfloat eyex=10,eyey=10,eyez=35;
 
@@ -25,11 +26,37 @@ double vy;
 double g = -10;
 double t = 0.1;
 
+GLuint textures[1];
+
 //===========================OpenGL部分=========================
 void init()
 {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-    //设置材质
+
+	GLbyte *pBytes;
+        GLint nWidth, nHeight, nComponents;
+        GLenum format;
+
+	// Black background
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+
+        glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glGenTextures(1, textures);
+        
+	// Load the texture objects
+        pBytes = gltLoadTGA("texture/floor.tga", &nWidth, &nHeight, &nComponents, &format);
+
+        glBindTexture(GL_TEXTURE_2D, textures[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D,0,nComponents,nWidth, nHeight, 0,
+		format, GL_UNSIGNED_BYTE, pBytes);
+	free(pBytes);
+
+
+//    设置材质
     GLfloat mat_ambient[] = { .8, .8, .8, 1.0 };
     GLfloat mat_diffuse[] = { .8, .0, .8, 1.0 };
     GLfloat mat_specular[] = { 1.0, .0, 1.0, 1.0 };
@@ -56,6 +83,9 @@ void init()
     
     vx = vix;
     vy = viy;
+
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 }
 
 void display()
@@ -67,14 +97,26 @@ void display()
 //    glScalef(1.0, 2.0, 1.0);
     glTranslatef(0, 0, 10);
 
+
+    glEnable(GL_TEXTURE_2D);
+
     glPushMatrix();
     glTranslatef(rx, ry, rz);
     glutSolidSphere(1, 50, 30);
+
+
+
+   
+    
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    glDepthMask(GL_TRUE);
+
     glPopMatrix();
 
-    glPushMatrix();
-    //   glutSolidSphere(9,50,50);
-    glPopMatrix();
+//    glPushMatrix();
+//       glutSolidSphere(9,50,50);
+//       glPopMatrix();
    
     glutSwapBuffers();
 }
@@ -90,48 +132,7 @@ void reshape(int w, int h)
     glLoadIdentity();
 }
 
-void keyboard(unsigned char key, int x, int y)
-{
-
-    switch (key)
-    {
-        case 'w':     //前
-        break;
-        case 's':     //后
-            break;
-        case 'a':     //左
-            break;
-        case 'd':     //右
-            break;
-        case 'q':    //上
-            break;
-        case 27:
-            exit(0);
-            break;
-    }
-}
-
-void MouseEvent(int button, int state, int x, int y)
-{
-    switch(button)
-    {
-        case GLUT_LEFT_BUTTON:
-            cout<<"GLUT_LEFT_BUTTON"<<endl;
-            break;
-        case GLUT_RIGHT_BUTTON:
-            cout<<"GLUT_RIGHT_BUTTON"<<endl;
-            break;
-        case GLUT_MIDDLE_BUTTON:
-            cout<<"GLUT_MIDDLE_BUTTON"<<endl;
-            break;
-    }
-}
-void MotionMove(int x,int y)
-{
-	/* empty */
-}
-
-void TimerFunction(int value)
+void TimerFunction(int)
 {
 	if (ry < 0) {
 		vy = -0.5 * vy;
@@ -172,9 +173,6 @@ int main(int argc, char *argv[])
     init();
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
-    glutKeyboardFunc(keyboard);
-    glutMouseFunc(MouseEvent);
-    glutMotionFunc(MotionMove);
     glutTimerFunc(33, TimerFunction, 1);
     glutMainLoop();
     return 0;
