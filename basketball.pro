@@ -7,9 +7,13 @@ TARGET =
 DEPENDPATH += . lib src
 INCLUDEPATH += . lib
 LIBS += -lglut -lGL -lGLU
+CONFIG += nas
 OBJECTS_DIR += ./objs
 MOC_DIR += ./tmp
 
 # Input
-HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h
-SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp src/basketball.cpp
+HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h \
+           src/modeling.h src/basketball.h
+
+SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp src/basketball.cpp \
+           src/modeling.cpp
