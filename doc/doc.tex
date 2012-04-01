@@ -1,0 +1,83 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage[slantfont, boldfont]{xeCJK}
+
+
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
+
+\setCJKmainfont{Adobe Heiti Std}
+\parindent 2em
+
+\begin{document}
+\title{The documentation of basketball modeling}
+\author{Song Wenhao}
+\date{\today}
+\maketitle
+\section{Introduction}
+This project make an animation of a basketball falling down with an initial horizontal speed. The basketball will in the end stop on the ground of the basketball court due to the loss of energy.
+
+\section{Transition Modeling of the basketball}
+Note that at this time, the modeling of the transition in this program does not necessarily agree with the physics. The author has tried to make it close to the theories as much as possible, but some of this is beyond his ability. The author decides to make it at least 'look right'. He makes some adjustment without referring to any physical law. He also simplifies many processes just to make himself relaxed. So the following part is here just for reference.
+
+\subsection{Three Phases}
+The transition of the basketball is divided into three phases.In each phase, the policy is different.
+\subsubsection{In the air}
+When the basketball is in the air, the following factors are taken into account:
+\begin{itemize}
+\item The gravity force
+\item The air resistance
+\item The Magnus force
+\end{itemize}
+
+\subsubsection{Collision}
+When the basketball hit the ground, the velocity in vertical direction is reduced according to a restitution coefficient of 0.75. If the vertical velocity is smaller than a certain threshold, it will be reduced again by the restitution coefficient to make it quickly go into rolling.
+
+\subsubsection{Rolling}
+When the basketball hit the ground, and the velocity in vertical direction is less than a certain threshold(different from the threshold mentioned above), the basketball will go into the 'rolling' state. A basketball in 'rolling' state will have a total force of 0 in the vertical direction. It will have an additional rolling friction in horizontal direction. The rolling friction is calculated by multiplying the rolling coefficient with the gravity force since other forces add little to the positive pressure.
+
+\subsection{Rotation}
+The rotation of the basketball is calculated by making the line speed of the the basketball the same as its horizontal speed. 
+
+\section{Programming Impementation}
+\begin{itemize}
+\item use glut to make the program portable
+\item glutTimerFunc() is used to update the screen 33 times a second
+\item use gluSphere() to draw the basketball, and automatically generate the texture coordinate
+\item draw six surfaces to compose the ground, and attach a texture to the top surface
+\item the textures is loaded in the fomat of tga, and the loader is from the \textsl{OpenGL SuperBible 4th Edition}
+\item the setup of light and material is from the example on the internet, unmodified
+\end{itemize}
+
+\section{Run the program}
+\subsection{Windows}
+Double click the 'basketball.exe'.
+
+\subsection{linux}
+Run './basketball' on your terminal.
+
+\section{Complilation}
+\subsection{Windows}
+In your cmd console, run:
+
+\$ qmake
+
+\$ nmake
+\subsubsection{dependency}
+\begin{itemize}
+\item qmake
+\item Qt Libraries (needed for playing sound)
+\end{itemize}
+\subsection{linux}
+On your terminal, run:
+
+\$ qmake
+
+\$ make
+\subsubsection{dependency}
+\begin{itemize}
+\item qmake
+\item Qt Libraries (should have NAS support, for playing sound)
+\end{itemize}
+
+\end{document}

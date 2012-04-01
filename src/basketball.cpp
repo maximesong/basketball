@@ -107,6 +107,11 @@ void init()
 	free(pBytes);
 
 
+	/* 
+	 * The following part about light is copied from the internet and 
+	 * it is not modified.
+	 */
+
 	GLfloat mat_ambient[] = { .8, .8, .8, 1.0 };
 	GLfloat mat_diffuse[] = { .8, .0, .8, 1.0 };
 	GLfloat mat_specular[] = { 1.0, .0, 1.0, 1.0 };
@@ -129,6 +134,8 @@ void init()
 
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+
+	/* The init of the ball */
 
 	ball.x = 0;
 	ball.y = 1.8;
