@@ -1,13 +1,4 @@
 \documentclass[10pt,a4paper]{article}
-\usepackage{fontspec}
-\usepackage[slantfont, boldfont]{xeCJK}
-
-
-\XeTeXlinebreaklocale "zh"
-\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
-
-\setCJKmainfont{Adobe Heiti Std}
-\parindent 2em
 
 \begin{document}
 \title{The documentation of basketball modeling}
@@ -18,7 +9,7 @@
 This project make an animation of a basketball falling down with an initial horizontal speed. The basketball will in the end stop on the ground of the basketball court due to the loss of energy.
 
 \section{Transition Modeling of the basketball}
-Note that at this time, the modeling of the transition in this program does not necessarily agree with the physics. The author has tried to make it close to the theories as much as possible, but some of this is beyond his knowledge and ability. The author decides to make it at least 'look right'. He makes some adjustment without referring to any physical law. He also simplifies many processes just to make himself relaxed. So the following part is here just for reference.
+Note that at this time, the modeling of the transition in this program does not necessarily agree with the physics. The author has tried to make it close to the theories as much as possible, but some of this is beyond his knowledge and ability. The author decides to make it at least ``look right''. He makes some adjustment without referring to any physical law. He also simplifies many processes just to make himself relaxed. So the following part is here just for reference.
 
 \subsection{Three Phases}
 The transition of the basketball is divided into three phases.In each phase, the calculation is different.
@@ -34,7 +25,7 @@ When the basketball is in the air, the following factors are taken into account:
 When the basketball hit the ground, the velocity in vertical direction is reduced according to a restitution coefficient of 0.75. If the vertical velocity is smaller than a certain threshold, it will be reduced again by the restitution coefficient to make it quickly go into rolling.
 
 \subsubsection{Rolling}
-When the basketball hit the ground, and the velocity in vertical direction is less than a certain threshold(different from the threshold mentioned above), the basketball will go into the 'rolling' state. A basketball in 'rolling' state will have a total force of 0 in the vertical direction. It will have an additional rolling friction in horizontal direction. The rolling friction is calculated by multiplying the rolling coefficient with the gravity force since other forces add little to the positive pressure.
+When the basketball hit the ground, and the velocity in vertical direction is less than a certain threshold(different from the threshold mentioned above), the basketball will go into the ``almost rolling'' state. A basketball in ``almost rolling'' state will have a total force of 0 in the vertical direction. It will have an additional rolling friction in horizontal direction. The rolling friction is calculated by multiplying the rolling coefficient with the gravity force since other forces add little to the positive pressure. If the vertical velocity becomes zero,the basketball goes into the ``rolling state'' and will have twice the rolling friction.
 
 \subsection{Spin of the basketball}
 The spin of the basketball is calculated by making the line speed of the the basketball the same as its horizontal speed. 
@@ -50,7 +41,7 @@ The spin of the basketball is calculated by making the line speed of the the bas
 
 \section{Run the program}
 \subsection{Windows}
-You should have Qt SDK or Qt Libraries installed or you can put the following files in the same directory as 'basketball.exe':
+You should have Qt SDK or Qt Libraries installed or you can put the following files in the same directory as ``basketball.exe'':
 \begin{itemize}
 \item QtCore4.dll
 \item QtCored4.dll
@@ -58,12 +49,12 @@ You should have Qt SDK or Qt Libraries installed or you can put the following fi
 \item QtGuid4.dll
 \end{itemize}
 
-Then double click 'basketball.exe' to run the program.
+Then double click ``basketball.exe'' to run the program.
 
 \subsection{linux}
-You should have libraries for qt, gl, glu, glut in your lib search path.
+You should have libraries for qt, gl, glu, glut in your lib search path.\\
 
-Then run './basketball' on your terminal to invoke the program.
+Then run ``./basketball'' on your terminal to invoke the program.
 
 \section{Complilation}
 \subsection{Windows}
@@ -80,20 +71,17 @@ In your Qt Command Prompt, run:
 \$ make
 
 \subsection{linux}
+\subsubsection{Prerequirements}
 \begin{itemize}
 \item g++
-\item Qt Libraries
+\item Qt tools and libraries
 \item headers and libraries for gl, glu, glut
 \end{itemize}
+\subsubsection{Compile}
 On your terminal, run:
 
 \$ qmake
 
 \$ make
-\subsubsection{dependency}
-\begin{itemize}
-\item qmake
-\item Qt Libraries (should have NAS support, for playing sound)
-\end{itemize}
 
 \end{document}
