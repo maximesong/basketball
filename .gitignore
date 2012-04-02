@@ -2,7 +2,8 @@
 tmp/*
 objs/*
 basketball
+basketball.exe
 model/*
 preparation/*
-release/*
+release*/*
 Makefile

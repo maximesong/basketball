@@ -5,9 +5,21 @@
 TEMPLATE = app
 TARGET = 
 DEPENDPATH += . lib src
-INCLUDEPATH += . lib
+INCLUDEPATH += . src/ src/lib
+
+unix {
 LIBS += -lglut -lGL -lGLU
+}
+
+win32 {
+LIBS += ./lib/glut32.lib ./lib/glu32.lib ./lib/opengl32.lib 
+CONFIG += release
+}
+
+unix {
 CONFIG += nas
+}
+
 OBJECTS_DIR += ./objs
 MOC_DIR += ./tmp
 

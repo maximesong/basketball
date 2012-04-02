@@ -34,6 +34,7 @@ typedef struct {
 
 	double rotation;
 
+	bool is_almost_rolling;
 	bool is_rolling;
 	bool is_hit;
 } Ball;

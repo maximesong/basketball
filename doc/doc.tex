@@ -18,10 +18,10 @@
 This project make an animation of a basketball falling down with an initial horizontal speed. The basketball will in the end stop on the ground of the basketball court due to the loss of energy.
 
 \section{Transition Modeling of the basketball}
-Note that at this time, the modeling of the transition in this program does not necessarily agree with the physics. The author has tried to make it close to the theories as much as possible, but some of this is beyond his ability. The author decides to make it at least 'look right'. He makes some adjustment without referring to any physical law. He also simplifies many processes just to make himself relaxed. So the following part is here just for reference.
+Note that at this time, the modeling of the transition in this program does not necessarily agree with the physics. The author has tried to make it close to the theories as much as possible, but some of this is beyond his knowledge and ability. The author decides to make it at least 'look right'. He makes some adjustment without referring to any physical law. He also simplifies many processes just to make himself relaxed. So the following part is here just for reference.
 
 \subsection{Three Phases}
-The transition of the basketball is divided into three phases.In each phase, the policy is different.
+The transition of the basketball is divided into three phases.In each phase, the calculation is different.
 \subsubsection{In the air}
 When the basketball is in the air, the following factors are taken into account:
 \begin{itemize}
@@ -36,8 +36,8 @@ When the basketball hit the ground, the velocity in vertical direction is reduce
 \subsubsection{Rolling}
 When the basketball hit the ground, and the velocity in vertical direction is less than a certain threshold(different from the threshold mentioned above), the basketball will go into the 'rolling' state. A basketball in 'rolling' state will have a total force of 0 in the vertical direction. It will have an additional rolling friction in horizontal direction. The rolling friction is calculated by multiplying the rolling coefficient with the gravity force since other forces add little to the positive pressure.
 
-\subsection{Rotation}
-The rotation of the basketball is calculated by making the line speed of the the basketball the same as its horizontal speed. 
+\subsection{Spin of the basketball}
+The spin of the basketball is calculated by making the line speed of the the basketball the same as its horizontal speed. 
 
 \section{Programming Impementation}
 \begin{itemize}
@@ -46,29 +46,45 @@ The rotation of the basketball is calculated by making the line speed of the the
 \item use gluSphere() to draw the basketball, and automatically generate the texture coordinate
 \item draw six surfaces to compose the ground, and attach a texture to the top surface
 \item the textures is loaded in the fomat of tga, and the loader is from the \textsl{OpenGL SuperBible 4th Edition}
-\item the setup of light and material is from the example on the internet, unmodified
 \end{itemize}
 
 \section{Run the program}
 \subsection{Windows}
-Double click the 'basketball.exe'.
+You should have Qt SDK or Qt Libraries installed or you can put the following files in the same directory as 'basketball.exe':
+\begin{itemize}
+\item QtCore4.dll
+\item QtCored4.dll
+\item QtGui4.dll
+\item QtGuid4.dll
+\end{itemize}
+
+Then double click 'basketball.exe' to run the program.
 
 \subsection{linux}
-Run './basketball' on your terminal.
+You should have libraries for qt, gl, glu, glut in your lib search path.
+
+Then run './basketball' on your terminal to invoke the program.
 
 \section{Complilation}
 \subsection{Windows}
-In your cmd console, run:
+\subsubsection{Prerequirements}
+\begin{itemize}
+\item MinGW (VC++ may work as well, but not tested)
+\item Qt Libraries
+\end{itemize}
+\subsubsection{Compile}
+In your Qt Command Prompt, run:
 
 \$ qmake
 
-\$ nmake
-\subsubsection{dependency}
-\begin{itemize}
-\item qmake
-\item Qt Libraries (needed for playing sound)
-\end{itemize}
+\$ make
+
 \subsection{linux}
+\begin{itemize}
+\item g++
+\item Qt Libraries
+\item headers and libraries for gl, glu, glut
+\end{itemize}
 On your terminal, run:
 
 \$ qmake

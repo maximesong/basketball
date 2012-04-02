@@ -1,8 +1,5 @@
 #include "basketball.h"
 
-#include "gltools.h"
-#include <GL/glut.h>
-
 #include <iostream>
 using namespace std;
 
@@ -106,54 +103,29 @@ void init()
 		     format, GL_UNSIGNED_BYTE, pBytes);
 	free(pBytes);
 
-
-	/* 
-	 * The following part about light is copied from the internet and 
-	 * it is not modified.
-	 */
-
-	GLfloat mat_ambient[] = { .8, .8, .8, 1.0 };
-	GLfloat mat_diffuse[] = { .8, .0, .8, 1.0 };
-	GLfloat mat_specular[] = { 1.0, .0, 1.0, 1.0 };
-	GLfloat mat_shininess[] = { 50.0 };
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
-
-	GLfloat light_position1[] = { 1.0, 1.0, 1.0, 0.0 };
-	GLfloat light_position2[] = { 1.0, 1.0, -1.0, 0.0 };
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position1);
-	glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_DEPTH_TEST);
-
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-
 	/* The init of the ball */
 
-	ball.x = 0;
-	ball.y = 1.8;
-	ball.z = 0;
+	ball.x = -10;
+	ball.y = 5;
+	ball.z = -3;
 	ball.r = 0.1;
-	ball.vx = 0.5;
+	ball.vx = 5;
 	ball.vy = 1.0;
-	ball.vz = 0;
+	ball.vz = 3.0;
 	ball.weight = 0.5;
 	ball.restitution_coefficient = 0.75;
 	ball.drag_coefficient = 0.5;
 	ball.m_coefficient = 0.5;
-	ball.rolling_coefficient = 0.03;
+	ball.rolling_coefficient = 0.07;
+	ball.is_almost_rolling = 0;
 	ball.is_rolling = 0;
 	ball.rotation = 0;
 
 	env.gravity = -9.8;
 	env.air_density = 1.25;
+
+	eyey += ball.y;
+
 }
 
 void display()
@@ -161,10 +133,14 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	gluLookAt(eyex, eyey, eyez,0, 0, 0 ,0, 1, 0);
+	if (eyey > 2) {
+		eyey -= 0.05;
+	}
+	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+
 	glTranslatef(0, 0, 10);
 
-	drawBox(0, -0.3, 0, 15, 0.3, 28);
+	drawBox(0, -0.3, 0, 28, 0.3, 15);
 
 	glDepthMask(GL_TRUE);
 
@@ -180,8 +156,7 @@ void display()
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
 	glRotatef(ball.rotation, ball.rx, ball.ry, ball.rz);
 
-	cout << ball.rotation << "\t" << ball.rx << 
-		"\t" << ball.ry << "\t" << ball.rz << endl;
+//	cout << ball.rotation << "\t" << ball.rx << "\t" << ball.ry << "\t" << ball.rz << endl;
 
 	glBegin(GL_QUADS);
 	GLUquadricObj *quadObj = gluNewQuadric();

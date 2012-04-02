@@ -12,6 +12,7 @@ Ball calculateXyFallingBall(const Ball &ball, const Env &env, double t)
 	next_ball.restitution_coefficient = ball.restitution_coefficient;
 	next_ball.drag_coefficient = ball.drag_coefficient;
 	next_ball.rolling_coefficient = ball.rolling_coefficient;
+	next_ball.is_almost_rolling = ball.is_almost_rolling;
 	next_ball.is_rolling = ball.is_rolling;
 	next_ball.rotation = ball.rotation;
 	next_ball.is_hit = 0;
@@ -56,9 +57,12 @@ Ball calculateXyFallingBall(const Ball &ball, const Env &env, double t)
 	double f_rolling_x = 0;
 	double f_rolling_z = 0;
 
-	if (ball.is_rolling) {
+	if (ball.is_almost_rolling) {
 		double f_rolling = f_g * ball.rolling_coefficient;
 		double hv = sqrt(ball.vx * ball.vx + ball.vz * ball.vz);
+		if (ball.is_rolling) {
+			f_rolling *= 2;
+		}
 		if (hv != 0) {
 			f_rolling_x = ball.vx / hv * f_rolling;
 			f_rolling_z = ball.vz / hv * f_rolling;
@@ -86,9 +90,9 @@ Ball calculateXyFallingBall(const Ball &ball, const Env &env, double t)
 		next_ball.vz = vz_with_rolling;
 
 
-	next_ball.x = 0.5 * (ball.vx + next_ball.vx) * t + ball.x;
-	next_ball.y = 0.5 * (ball.vy + next_ball.vy) * t + ball.y;
-	next_ball.z = 0.5 * (ball.vz + next_ball.vz) * t + ball.z;
+	next_ball.x = next_ball.vx * t + ball.x;
+	next_ball.y = next_ball.vy * t + ball.y;
+	next_ball.z = next_ball.vz * t + ball.z;
 
 	if ((next_ball.y - next_ball.r) <= 0) { /* hit the ground */
 
@@ -103,15 +107,17 @@ Ball calculateXyFallingBall(const Ball &ball, const Env &env, double t)
 			next_ball.vy *= next_ball.restitution_coefficient;
 		}
 		if (next_ball.vy + 2 * t * env.gravity < 0) {
-			next_ball.is_rolling = 1;
+			next_ball.is_almost_rolling = 1;
 			next_ball.y = next_ball.vy * t + next_ball.y;
 		}
 	}
 
-	if (next_ball.is_rolling) {
+	if (next_ball.is_almost_rolling) {
 		next_ball.is_hit = 0;
-		if (next_ball.y - next_ball.r < 0.001) {
+
+		if (next_ball.y - next_ball.r < 0.01) {
 			next_ball.y = next_ball.r;
+			next_ball.is_rolling = 1;
 		}
 		else {
 			next_ball.y = next_ball.y + 0.9 * (next_ball.r - next_ball.y);
@@ -120,7 +126,7 @@ Ball calculateXyFallingBall(const Ball &ball, const Env &env, double t)
 	}
 
 	next_ball.rx = next_ball.vz;
-	next_ball.rz = -next_ball.vx;
+	next_ball.rz = next_ball.vx;
 	next_ball.ry = 0;
 	double r = sqrt(next_ball.rx * next_ball.rx + next_ball.rz * next_ball.rz);
 	if (r != 0) {
