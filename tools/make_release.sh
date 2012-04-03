@@ -11,6 +11,8 @@ mkdir $RELEASE_PATH
 mkdir $RELEASE_PATH/doc
 mkdir $RELEASE_PATH/build
 
+cp $ROOT_PATH/basketball.pro $RELEASE_PATH
+
 cd $ROOT_PATH
 qmake
 make
