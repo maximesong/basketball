@@ -1,103 +1,14 @@
-#include "basketball.h"
+#include "BasketballWidget.h"
 
-#include <iostream>
-using namespace std;
-
-#include <QTimer>
-
-
-#include "modeling.h"
-
-#define FRAMES 33
-
-GLfloat eyex=2,eyey=2,eyez=15;
-
-GLfloat fLightPos[4]   = { 10.0f, 18.0f, 10.0f, 1.0f };  // Point source
-GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
-GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-#define GROUND_TEXTURE  0
-#define BALL_TEXTURE   1
-#define NUM_TEXTURES    2
-GLuint  textures[NUM_TEXTURES];
-const char *szTextureFiles[] = {"texture/houston.tga", "texture/basketball.tga"};
-
-M3DMatrix44f mShadowMatrix;
-
-Ball ball;
-Env env;
-
+void BasketballWidget::initializeGL()
+{
 #ifdef __linux__
-Phonon::MediaObject *player;
-#endif
-
-void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d)
-{
-	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glBegin(GL_QUADS);
-        //front
-        glVertex3f(x-w, y+h, z+d);
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y+h, z+d);
-
-        //bottom
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x-w, y-h, z-d);
-
-        //back
-        glVertex3f(x+w, y+h, z-d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x-w, y-h, z-d);
-        glVertex3f(x-w, y+h, z-d);
-    
-        //top, all point up
-	glTexCoord2f(0.0, 0.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x-w, y+h, z+d);
-
-	glTexCoord2f(1.0, 0.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x+w, y+h, z+d);
-
-	glTexCoord2f(1.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x+w, y+h, z-d);
-
-	glTexCoord2f(0.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x-w, y+h, z-d);
-
-        //left
-        glVertex3f(x-w, y+h, z+d);
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x-w, y-h, z-d);
-        glVertex3f(x-w, y+h, z-d);
-
-        //right
-        glVertex3f(x+w, y+h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x+w, y+h, z-d);
- 
-        glEnd();
-}
-
-void init()
-{
-	#ifdef __linux__
 //	Phonon::MediaSource ms("music/hit.wav");
 //	cout << ms.discType() << endl;
 	player = Phonon::createPlayer(Phonon::MusicCategory, 
 				      Phonon::MediaSource("music/hit.wav"));
 	player->play();
-	#endif
+#endif
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
@@ -204,9 +115,23 @@ void init()
 
 	eyey += ball.y;
 
+	QTimer *timer = new QTimer(this);
+	connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+	timer->start(10);
 }
 
-void display()
+void BasketballWidget::resizeGL(int w, int h)
+{
+	glViewport(0, 0, (GLsizei) w , (GLsizei) h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	if (h ==0 ) h = 1;
+	gluPerspective(45.0f,(GLfloat) w / (GLfloat)h , 0.5f, -1000.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+void BasketballWidget::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glLoadIdentity();
@@ -267,42 +192,68 @@ void display()
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fBrightLight);
    
 	glPopMatrix();
-
-	glutSwapBuffers();
 }
 
-void reshape(int w, int h)
+void BasketballWidget::drawGround(GLfloat x, GLfloat y, GLfloat z,
+				  GLfloat w, GLfloat h, GLfloat d)
 {
-	glViewport(0, 0, (GLsizei) w , (GLsizei) h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if (h ==0 ) h = 1;
-	gluPerspective(45.0f,(GLfloat) w / (GLfloat)h , 0.5f, -1000.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBegin(GL_QUADS);
+        //front
+        glVertex3f(x-w, y+h, z+d);
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y+h, z+d);
+
+        //bottom
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x-w, y-h, z-d);
+
+        //back
+        glVertex3f(x+w, y+h, z-d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x-w, y-h, z-d);
+        glVertex3f(x-w, y+h, z-d);
+    
+        //top, all point up
+	glTexCoord2f(0.0, 0.0);
+	glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(x-w, y+h, z+d);
+
+	glTexCoord2f(1.0, 0.0);
+	glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(x+w, y+h, z+d);
+
+	glTexCoord2f(1.0, 1.0);
+	glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(x+w, y+h, z-d);
+
+	glTexCoord2f(0.0, 1.0);
+	glNormal3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(x-w, y+h, z-d);
+
+        //left
+        glVertex3f(x-w, y+h, z+d);
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x-w, y-h, z-d);
+        glVertex3f(x-w, y+h, z-d);
+
+        //right
+        glVertex3f(x+w, y+h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x+w, y+h, z-d);
+ 
+        glEnd();
 }
 
-void TimerFunction(int)
+void BasketballWidget::timeFunc(int)
 {
 	ball = calculateXyFallingBall(ball, env, 1.0 / FRAMES);
-	glutPostRedisplay();
-	glutTimerFunc(FRAMES, TimerFunction, 1);
-}
-
-int main(int argc, char *argv[])
-{
-	#ifdef __linux__
-	QApplication app(argc, argv);
-	#endif
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(800, 600);
-	glutCreateWindow("Basketball Demo");
-	init();
-	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
-	glutTimerFunc(FRAMES, TimerFunction, 1);
-	glutMainLoop();
-	return 0;
+	updateGL();
 }

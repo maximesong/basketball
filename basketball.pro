@@ -6,9 +6,11 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += . lib src
 INCLUDEPATH += . src/ src/lib
+QT += opengl
 
 unix {
 LIBS += -lglut -lGL -lGLU
+QT += phonon
 }
 
 win32 {
@@ -25,7 +27,7 @@ MOC_DIR += ./tmp
 
 # Input
 HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h \
-           src/modeling.h src/basketball.h
+           src/modeling.h src/basketball.h src/BasketballWidget.h
 
-SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp src/basketball.cpp \
-           src/modeling.cpp
+SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp  \
+           src/modeling.cpp src/BasketballWidget.cpp src/main.cpp
