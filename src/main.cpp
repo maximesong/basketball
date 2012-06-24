@@ -4,8 +4,7 @@
 #include "GL/glut.h"
 #endif
 
-
-#include "CartoonShaderWidget.h"
+#include "BasketballWidget.h"
 
 int main(int argc, char **argv)
 {

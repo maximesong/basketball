@@ -1,14 +1,42 @@
 #include "BasketballWidget.h"
 
+#include <iostream>
+using namespace std;
+
+#include <QTimer>
+
+#include "Sound.h"
+#include "World.h"
+
+GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
+GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+BasketballWidget::BasketballWidget(QWidget *parent):
+	QGLWidget(parent)
+{
+	/* empty */
+}
 void BasketballWidget::initializeGL()
 {
-#ifdef __linux__
-//	Phonon::MediaSource ms("music/hit.wav");
-//	cout << ms.discType() << endl;
-	player = Phonon::createPlayer(Phonon::MusicCategory, 
-				      Phonon::MediaSource("music/hit.wav"));
-	player->play();
-#endif
+	/* The init of the ball */
+	m_world = new World();
+	m_world->ball = BallModel(-10, 5, -3,            /* pos */
+				  5, 1, 3,               /* velocity */
+				  0, 0, 0,               /* rotation axis */
+				  0.1, 0.5, 0,           /* radius, weight, rotation */
+				  0.75, 0.5, 0.5, 0.07,  /* coefficients */
+				  0, 0, 0);              /* states */
+	m_world->gravity = -9.8;
+	m_world->air_density = 1.25;
+
+	m_world->camera.pos[1] += m_world->ball.v[1];
+
+	Light light0(fLowLight, fBrightLight, fBrightLight);
+	m_world->lights.append(light0);
+
+	m_sound = new Sound();
+
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
@@ -35,16 +63,12 @@ void BasketballWidget::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_MULTISAMPLE_ARB);
     
-	// Setup light parameters
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, fNoLight);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, fLowLight);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, fBrightLight);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, fBrightLight);
+
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
     
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-
 
 	// Calculate shadow matrix
 
@@ -54,7 +78,7 @@ void BasketballWidget::initializeGL()
 
 	M3DVector4f pPlane;
 	m3dGetPlaneEquation(pPlane, vPoints[0], vPoints[1], vPoints[2]);
-	m3dMakePlanarShadowMatrix(mShadowMatrix, pPlane, fLightPos);
+	m3dMakePlanarShadowMatrix(mShadowMatrix, pPlane, m_world->lights[0].pos.vec);
 
 	// Mostly use material tracking
 	glEnable(GL_COLOR_MATERIAL);
@@ -70,18 +94,12 @@ void BasketballWidget::initializeGL()
         
 	// Load the texture objects
 	for(int i = 0; i < NUM_TEXTURES; i++) {
-		GLbyte *pBytes;
-		GLint iWidth, iHeight, iComponents;
-		GLenum eFormat;
-        
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
-        
-		// Load this texture map
-		pBytes = gltLoadTGA(szTextureFiles[i], &iWidth, &iHeight, 
-				    &iComponents, &eFormat);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, iComponents, iWidth, iHeight, 
-				  eFormat, GL_UNSIGNED_BYTE, pBytes);
-		free(pBytes);
+
+		QImage image = QImage(szTextureFiles[i]);
+		QImage texture = convertToGLFormat(image);
+		glTexImage2D(GL_TEXTURE_2D, 0, 4, texture.width(), texture.height(),
+			     0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
         
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
@@ -92,28 +110,7 @@ void BasketballWidget::initializeGL()
 				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
 
-	/* The init of the ball */
 
-	ball.x = -10;
-	ball.y = 5;
-	ball.z = -3;
-	ball.r = 0.1;
-	ball.vx = 5;
-	ball.vy = 1.0;
-	ball.vz = 3.0;
-	ball.weight = 0.5;
-	ball.restitution_coefficient = 0.75;
-	ball.drag_coefficient = 0.5;
-	ball.m_coefficient = 0.5;
-	ball.rolling_coefficient = 0.07;
-	ball.is_almost_rolling = 0;
-	ball.is_rolling = 0;
-	ball.rotation = 0;
-
-	env.gravity = -9.8;
-	env.air_density = 1.25;
-
-	eyey += ball.y;
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
@@ -136,30 +133,41 @@ void BasketballWidget::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glLoadIdentity();
 
-	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
+	for (int i = 0; i != m_world->lights.size(); ++i) {
+		GLint light;
+		switch (i) {
+		case 0:
+			light = GL_LIGHT0; break;
+		default:
+			cout << "ERROR LIGHT " << i << endl;
+		}
+		glLightfv(light, GL_POSITION, m_world->lights[i].pos.vec);
+		glLightfv(light, GL_AMBIENT, m_world->lights[i].ambient.vec);
+		glLightfv(light, GL_DIFFUSE, m_world->lights[i].diffuse.vec);
+		glLightfv(light, GL_SPECULAR, m_world->lights[i].specular.vec);
+	}
 
+/*
 	if (eyey > 2) {
 		eyey -= 0.05;
 	}
 	
 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
 		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
-
+*/
 	glTranslatef(0, 0, 10);
 
 //	glDepthMask(GL_TRUE);
 
-	drawGround(0, -0.3, 0, 28, 0.3, 15);
+	for (int i = 0; i != m_world->flats.size(); ++i)
+		drawFlat(m_world->flats[i]);
 
 	glPushMatrix();
-	glTranslatef(ball.x, ball.y, ball.z);
+	glTranslatef(m_world->ball.pos[0], m_world->ball.pos[1], m_world->ball.pos[2]);
 
-	if (ball.is_hit) {
+	if (m_world->ball.is_hit) {
 		glScalef(1, 0.95, 1);
-		QSound::play("music/hit.wav");
-#ifdef __linux__
-		player->play();
-#endif
+		m_sound->play("Hit");
 	}
 
 	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
@@ -174,7 +182,7 @@ void BasketballWidget::paintGL()
         glPushMatrix();
 	glMultMatrixf(mShadowMatrix);
         glColor4f(0.00f, 0.00f, 0.00f, .6f);  // Shadow color
-	gltDrawSphere(ball.r, 40, 20);
+	drawSphere(m_world->ball.radius, 40, 20);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         glPopMatrix();
         glDisable(GL_STENCIL_TEST);
@@ -183,77 +191,228 @@ void BasketballWidget::paintGL()
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
 
-	glRotatef(ball.rotation, ball.rx, ball.ry, ball.rz);
+	glRotatef(m_world->ball.rotation, 
+		  m_world->ball.ra[0], 
+		  m_world->ball.ra[1], 
+		  m_world->ball.ra[2]);
 
 //	cout << ball.rotation << "\t" << ball.x << "\t" << ball.y << "\t" << ball.z << endl;
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fNoLight);
-	gltDrawSphere(ball.r, 40, 20);
+	drawSphere(m_world->ball.radius, 40, 20);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fBrightLight);
    
 	glPopMatrix();
 }
 
-void BasketballWidget::drawGround(GLfloat x, GLfloat y, GLfloat z,
-				  GLfloat w, GLfloat h, GLfloat d)
+void BasketballWidget::drawFlat(const FlatModel &flat)
 {
-	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	switch (flat.material) {
+	case FlatModel::Ground:
+		glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		break;
+	case FlatModel::Wall:
+		break;
+	}
+
+	GLfloat x_min = flat.x - flat.width;
+	GLfloat x_max = flat.x + flat.width;
+	GLfloat y_min = flat.y - flat.height;
+	GLfloat y_max = flat.y + flat.height;
+	GLfloat z_min = flat.z - flat.depth;
+	GLfloat z_max = flat.z + flat.depth;
 
 	glBegin(GL_QUADS);
         //front
-        glVertex3f(x-w, y+h, z+d);
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y+h, z+d);
+	if (flat.visibleSurfaces & FlatModel::Front) {
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(0.0f, 0.0f, 1.0f);
+		glVertex3f(x_min, y_max, z_max);
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(0.0f, 0.0f, 1.0f);
+		glVertex3f(x_min, y_min, z_max);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(0.0f, 0.0f, 1.0f);
+		glVertex3f(x_max, y_min, z_max);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(0.0f, 0.0f, 1.0f);
+		glVertex3f(x_max, y_max, z_max);
+	} else {
+		glVertex3f(x_min, y_max, z_max);
+		glVertex3f(x_min, y_min, z_max);
+		glVertex3f(x_max, y_min, z_max);
+		glVertex3f(x_max, y_max, z_max);
+	}
 
         //bottom
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x-w, y-h, z-d);
+	if (flat.visibleSurfaces & FlatModel::Bottom) {
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(0.0f, -1.0f, 0.0f);
+		glVertex3f(x_min, y_min, z_max);
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(0.0f, -1.0f, 0.0f);
+		glVertex3f(x_max, y_min, z_max);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(0.0f, -1.0f, 0.0f);
+		glVertex3f(x_max, y_min, z_min);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(0.0f, -1.0f, 0.0f);
+		glVertex3f(x_min, y_min, z_min);
+	} else {
+		glVertex3f(x_min, y_min, z_max);
+		glVertex3f(x_max, y_min, z_max);
+		glVertex3f(x_max, y_min, z_min);
+		glVertex3f(x_min, y_min, z_min);
+	}
 
         //back
-        glVertex3f(x+w, y+h, z-d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x-w, y-h, z-d);
-        glVertex3f(x-w, y+h, z-d);
+	if (flat.visibleSurfaces & FlatModel::Back) {
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(0.0f, 0.0f, -1.0f);
+		glVertex3f(x_max, y_max, z_min);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(0.0f, 0.0f, -1.0f);
+		glVertex3f(x_max, y_min, z_min);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(0.0f, 0.0f, -1.0f);
+		glVertex3f(x_min, y_min, z_min);
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(0.0f, 0.0f, -1.0f);
+		glVertex3f(x_min, y_max, z_min);
+	} else {
+		glVertex3f(x_max, y_max, z_min);
+		glVertex3f(x_max, y_min, z_min);
+		glVertex3f(x_min, y_min, z_min);
+		glVertex3f(x_min, y_max, z_min);
+	}
     
         //top, all point up
-	glTexCoord2f(0.0, 0.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x-w, y+h, z+d);
-
-	glTexCoord2f(1.0, 0.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x+w, y+h, z+d);
-
-	glTexCoord2f(1.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x+w, y+h, z-d);
-
-	glTexCoord2f(0.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(x-w, y+h, z-d);
+	if (flat.visibleSurfaces & FlatModel::Top) {
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(0.0f, 1.0f, 0.0f);
+		glVertex3f(x_min, y_max, z_max);
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(0.0f, 1.0f, 0.0f);
+		glVertex3f(x_max, y_max, z_max);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(0.0f, 1.0f, 0.0f);
+		glVertex3f(x_max, y_max, z_min);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(0.0f, 1.0f, 0.0f);
+		glVertex3f(x_min, y_max, z_min);
+	} else {
+		glVertex3f(x_min, y_max, z_max);
+		glVertex3f(x_max, y_max, z_max);
+		glVertex3f(x_max, y_max, z_min);
+		glVertex3f(x_min, y_max, z_min);
+	}
 
         //left
-        glVertex3f(x-w, y+h, z+d);
-        glVertex3f(x-w, y-h, z+d);
-        glVertex3f(x-w, y-h, z-d);
-        glVertex3f(x-w, y+h, z-d);
+	if (flat.visibleSurfaces & FlatModel::Left) {
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(-1.0f, 0.0f, 0.0f);
+		glVertex3f(x_min, y_max, z_max);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(-1.0f, 0.0f, 0.0f);
+		glVertex3f(x_min, y_min, z_max);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(-1.0f, 0.0f, 0.0f);
+		glVertex3f(x_min, y_min, z_min);
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(-1.0f, 0.0f, 0.0f);
+		glVertex3f(x_min, y_max, z_min);
+	} else {
+		glVertex3f(x_min, y_max, z_max);
+		glVertex3f(x_min, y_min, z_max);
+		glVertex3f(x_min, y_min, z_min);
+		glVertex3f(x_min, y_max, z_min);
+	}
 
         //right
-        glVertex3f(x+w, y+h, z+d);
-        glVertex3f(x+w, y-h, z+d);
-        glVertex3f(x+w, y-h, z-d);
-        glVertex3f(x+w, y+h, z-d);
+	if (flat.visibleSurfaces & FlatModel::Right) {
+		glTexCoord2f(1.0, 0.0);
+		glNormal3f(1.0f, 0.0f, 0.0f);
+		glVertex3f(x_max, y_max, z_max);
+		glTexCoord2f(1.0, 1.0);
+		glNormal3f(1.0f, 0.0f, 0.0f);
+		glVertex3f(x_max, y_min, z_max);
+		glTexCoord2f(0.0, 1.0);
+		glNormal3f(1.0f, 0.0f, 0.0f);
+		glVertex3f(x_max, y_min, z_min);
+		glTexCoord2f(0.0, 0.0);
+		glNormal3f(1.0f, 0.0f, 0.0f);
+		glVertex3f(x_max, y_max, z_min);
+	} else {
+		glVertex3f(x_max, y_max, z_max);
+		glVertex3f(x_max, y_min, z_max);
+		glVertex3f(x_max, y_min, z_min);
+		glVertex3f(x_max, y_max, z_min);
+	}
  
         glEnd();
 }
 
 void BasketballWidget::timeFunc(int)
 {
-	ball = calculateXyFallingBall(ball, env, 1.0 / FRAMES);
+	m_world->go(1.0 / FRAMES);
 	updateGL();
+}
+
+// void BasketballWidget::updateWorld(const World &world, WhatChanged changes)
+// {
+// }
+
+
+/* this piece of code is from opengl superbible's gltools.cpp */
+void BasketballWidget::drawSphere(GLfloat fRadius, GLint iSlices, GLint iStacks)
+{
+	GLfloat drho = (GLfloat)(3.141592653589) / (GLfloat) iStacks;
+	GLfloat dtheta = 2.0f * (GLfloat)(3.141592653589) / (GLfloat) iSlices;
+	GLfloat ds = 1.0f / (GLfloat) iSlices;
+	GLfloat dt = 1.0f / (GLfloat) iStacks;
+	GLfloat t = 1.0f;	
+	GLfloat s = 0.0f;
+	GLint i, j;     // Looping variables
+	
+	for (i = 0; i < iStacks; i++) 
+	{
+		GLfloat rho = (GLfloat)i * drho;
+		GLfloat srho = (GLfloat)(sin(rho));
+		GLfloat crho = (GLfloat)(cos(rho));
+		GLfloat srhodrho = (GLfloat)(sin(rho + drho));
+		GLfloat crhodrho = (GLfloat)(cos(rho + drho));
+		
+		// Many sources of OpenGL sphere drawing code uses a triangle fan
+		// for the caps of the sphere. This however introduces texturing 
+		// artifacts at the poles on some OpenGL implementations
+		glBegin(GL_TRIANGLE_STRIP);
+		s = 0.0f;
+		for ( j = 0; j <= iSlices; j++) 
+		{
+			GLfloat theta = (j == iSlices) ? 0.0f : j * dtheta;
+			GLfloat stheta = (GLfloat)(-sin(theta));
+			GLfloat ctheta = (GLfloat)(cos(theta));
+			
+			GLfloat x = stheta * srho;
+			GLfloat y = ctheta * srho;
+			GLfloat z = crho;
+            
+			glTexCoord2f(s, t);
+			glNormal3f(x, y, z);
+			glVertex3f(x * fRadius, y * fRadius, z * fRadius);
+			
+			x = stheta * srhodrho;
+			y = ctheta * srhodrho;
+			z = crhodrho;
+			glTexCoord2f(s, t - dt);
+			s += ds;
+			glNormal3f(x, y, z);
+			glVertex3f(x * fRadius, y * fRadius, z * fRadius);
+		}
+		glEnd();
+
+		t -= dt;
+        }
 }

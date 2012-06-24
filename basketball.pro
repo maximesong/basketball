@@ -31,3 +31,18 @@ HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h \
 
 SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp  \
            src/modeling.cpp src/BasketballWidget.cpp src/main.cpp
+
+
+HEADERS += Sound.h \
+           World.h \
+           Vector.h \
+           Light.h \
+           BallModel.h \
+           FlatModel.h \
+
+SOURCES += Sound.cpp \
+           World.cpp \
+           Vector.cpp \
+           Light.cpp \
+           BallModel.cpp \
+           FlatModel.cpp \

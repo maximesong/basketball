@@ -1,40 +1,52 @@
-#include "EnvModel.h"
+#ifndef _BALLMODEL_H_
+#define _BALLMODEL_H_
+
+#include "Vector.h"
 
 class BallModel {
 public:
-	BallModel(double weight);
-private:
-	double m_weight;
+	BallModel(double x, double y, double z,
+		  double vx, double vy, double vz,
+		  double rx, double ry, double rz,
+		  double radius, double weight, double rotation,
+		  double restitution_coefficient,
+		  double drag_coefficient,
+		  double m_coefficient,
+		  double rolling_coefficient,
+		  bool is_almost_rolling,
+		  bool is_rolling,
+		  bool is_hit);
+
+	BallModel();
+
+	double weight;
 
 /* the radius of the ball */
-	double m_r;
+	double radius;
 
 /* The position of the ball */
-	double m_x;
-	double m_y;
-	double m_z;
+	Vector3d pos;
 
 /* the velocity of transition */
-	double m_vx;
-	double m_vy;
-	double m_vz;
+	Vector3d v;
 
 /* the velocity of rotation */
 	double m_w;
 
 /* the rotation aix */
-	double m_rx;
-	double m_ry;
-	double m_rz;
+	Vector3d ra;
 
-	double m_drag_const;
-	double m_m_const;
-	double m_restitution_const;
-	double m_rolling_const;
+	double drag_coefficient;
+	double m_coefficient;
+	double restitution_coefficient;
+	double rolling_coefficient;
 
-	double m_rotation;
+	double rotation;
 
-	bool m_is_almost_rolling;
-	bool m_is_rolling;
-	bool m_is_hit;
+	bool is_almost_rolling;
+	bool is_rolling;
+	bool is_hit;
 };
+
+#endif /* _BALLMODEL_H_ */
+
