@@ -24,7 +24,7 @@ void BasketballWidget::initializeGL()
 	m_world->ball = BallModel(-10, 5, -3,            /* pos */
 				  5, 1, 3,               /* velocity */
 				  0, 0, 0,               /* rotation axis */
-				  0.1, 0.5, 0,           /* radius, weight, rotation */
+				  0.1, 0.5, 0, 0,        /* radius, weight, rotation, w velocity*/
 				  0.75, 0.5, 0.5, 0.07,  /* coefficients */
 				  0, 0, 0);              /* states */
 	m_world->gravity = -9.8;

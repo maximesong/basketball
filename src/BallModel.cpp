@@ -4,7 +4,7 @@
 BallModel::BallModel(double x, double y, double z,
 		     double vx, double vy, double vz,
 		     double rx, double ry, double rz,
-		     double radius, double weight, double rotation,
+		     double radius, double weight, double rotation, double w,
 		     double restitution_coefficient,
 		     double drag_coefficient,
 		     double m_coefficient,
@@ -23,6 +23,7 @@ BallModel::BallModel(double x, double y, double z,
 	this->ra[1] = ry;
 	this->ra[2] = rz;
 	this->weight = weight;
+	this->w = w;
 	this->restitution_coefficient = restitution_coefficient;
 	this->drag_coefficient = drag_coefficient;
 	this->m_coefficient = m_coefficient;

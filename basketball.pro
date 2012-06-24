@@ -11,6 +11,7 @@ QT += opengl
 unix {
 LIBS += -lglut -lGL -lGLU
 QT += phonon
+config += debug
 }
 
 win32 {

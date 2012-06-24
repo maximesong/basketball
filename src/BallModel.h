@@ -8,7 +8,7 @@ public:
 	BallModel(double x, double y, double z,
 		  double vx, double vy, double vz,
 		  double rx, double ry, double rz,
-		  double radius, double weight, double rotation,
+		  double radius, double weight, double rotation, double w,
 		  double restitution_coefficient,
 		  double drag_coefficient,
 		  double m_coefficient,
@@ -20,6 +20,8 @@ public:
 	BallModel();
 
 	double weight;
+
+	double w;
 
 /* the radius of the ball */
 	double radius;
