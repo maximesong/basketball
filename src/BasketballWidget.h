@@ -6,6 +6,7 @@
 
 #ifdef __linux__
 #include "GL/glut.h"
+#include "GL/glu.h"
 #endif
 
 #include "math3d.h"

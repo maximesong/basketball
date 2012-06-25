@@ -4,10 +4,10 @@
 
 Vector3d::Vector3d(float *v)
 {
-	memcpy(v, vec, 3 * sizeof(float));
+	memcpy(vec, v, 3 * sizeof(float));
 }
 
-Vector3d::Vector3d(double v1, double v2, double v3)
+Vector3d::Vector3d(float v1, float v2, float v3)
 {
 	vec[0] = v1;
 	vec[1] = v2;
@@ -22,7 +22,7 @@ float &Vector3d::operator[](int i)
 		return vec[0];
 }
 
-Vector4d::Vector4d(double v1, double v2, double v3, double v4)
+Vector4d::Vector4d(float v1, float v2, float v3, float v4)
 {
 	vec[0] = v1;
 	vec[1] = v2;
@@ -41,5 +41,5 @@ float &Vector4d::operator[](int i)
 
 Vector4d::Vector4d(float *v)
 {
-	memcpy(v, vec, 4 * sizeof(float));
+	memcpy(vec, v, 4 * sizeof(float));
 }

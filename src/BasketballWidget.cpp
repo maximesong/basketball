@@ -4,6 +4,7 @@
 using namespace std;
 
 #include <QTimer>
+#include <QtOpenGL>
 
 #include "Sound.h"
 #include "World.h"
@@ -11,6 +12,7 @@ using namespace std;
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat fLightPos[]   = { 10.0f, 18.0f, 10.0f, 1.0f };
 
 const char *szTextureFiles[] = {"texture/houston.tga", "texture/basketball.tga"};
 
@@ -34,7 +36,13 @@ void BasketballWidget::initializeGL()
 
 	m_world->camera.pos[1] += m_world->ball.v[1];
 
-	Light light0(fLowLight, fBrightLight, fBrightLight);
+	FlatModel ground = FlatModel(0, -0.3, 0,
+				     20, 0.3, 20);
+	ground.material = FlatModel::Ground;
+	ground.visibleSurfaces = FlatModel::Top | FlatModel::Bottom;
+	m_world->flats.append(ground);
+
+	Light light0(fLightPos, fLowLight, fBrightLight, fBrightLight);
 	m_world->lights.append(light0);
 
 	m_sound = new Sound();
@@ -98,6 +106,7 @@ void BasketballWidget::initializeGL()
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
 
 		QImage image = QImage(szTextureFiles[i]);
+		cout << image.width() << "S" << image.height() << endl;
 		QImage texture = convertToGLFormat(image);
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, texture.width(), texture.height(),
 			     0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
@@ -123,6 +132,7 @@ void BasketballWidget::resizeGL(int w, int h)
 	glLoadIdentity();
 	if (h ==0 ) h = 1;
 	gluPerspective(45.0f,(GLfloat) w / (GLfloat)h , 0.5f, -1000.0f);
+//	glOrthof(-0.5, 0.5, 0.5, -0.5, 4.0, 15.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -130,6 +140,10 @@ void BasketballWidget::resizeGL(int w, int h)
 void BasketballWidget::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	QGLWidget::renderText(100, 100, "Hi");
+
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);///清空颜色缓存和深度缓存
+
 	glLoadIdentity();
 
 	for (int i = 0; i != m_world->lights.size(); ++i) {
@@ -145,15 +159,50 @@ void BasketballWidget::paintGL()
 		glLightfv(light, GL_DIFFUSE, m_world->lights[i].diffuse.vec);
 		glLightfv(light, GL_SPECULAR, m_world->lights[i].specular.vec);
 	}
+	gluLookAt(0.0, 2.0, 0.0,
+              0.0, -1.0, 0.0,
+              0.0f, 1.0f,0.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	drawSphere(20, 40, 20);
 
+	for (int i = 0; i != m_world->flats.size(); ++i)
+		drawFlat(m_world->flats[i]);
 /*
-	if (eyey > 2) {
-		eyey -= 0.05;
+	for (int i = 0; i != m_world->lights.size(); ++i) {
+		GLint light;
+		switch (i) {
+		case 0:
+			light = GL_LIGHT0; break;
+		default:
+			cout << "ERROR LIGHT " << i << endl;
+		}
+		glLightfv(light, GL_POSITION, m_world->lights[i].pos.vec);
+		glLightfv(light, GL_AMBIENT, m_world->lights[i].ambient.vec);
+		glLightfv(light, GL_DIFFUSE, m_world->lights[i].diffuse.vec);
+		glLightfv(light, GL_SPECULAR, m_world->lights[i].specular.vec);
 	}
+
+
+	gluLookAt(0.0,0.0,5.0,
+              0.0,0.0,-1.0,
+              0.0f,1.0f,0.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	drawSphere(0.1, 40, 20);
 	
-	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
-		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
-*/
+	if (m_world->camera.pos[1] > 2) {
+		m_world->camera.pos[1] -= 0.05;
+	}
+	for (int i = 0; i != 3; ++ i) {
+		cout << m_world->ball.pos[i] << endl;
+	}
+	gluLookAt(m_world->camera.pos[0] + m_world->ball.pos[0], 
+	 	  m_world->camera.pos[1], 
+	 	  m_world->camera.pos[2] + m_world->ball.pos[2], 
+	 	  0.9 * m_world->ball.pos[0], 
+	 	  -m_world->camera.pos[1], 
+	 	  0.9 * m_world->ball.pos[2] ,
+	 	  0, 1, 0);
+
 	glTranslatef(0, 0, 10);
 
 //	glDepthMask(GL_TRUE);
@@ -202,6 +251,8 @@ void BasketballWidget::paintGL()
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fBrightLight);
    
 	glPopMatrix();
+*/
+
 }
 
 void BasketballWidget::drawFlat(const FlatModel &flat)

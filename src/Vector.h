@@ -4,7 +4,7 @@
 class Vector3d {
 public:
 	Vector3d(float *v);
-	Vector3d(double v1 = 0.0, double v2 = 0.0, double v3 = 0.0);
+	Vector3d(float v1 = 0.0, float v2 = 0.0, float v3 = 0.0);
 	float &operator[](int i);
 	float vec[3];
 };
@@ -12,7 +12,7 @@ public:
 class Vector4d {
 public:
 	Vector4d(float *v);
-	Vector4d(double v1 = 0.0, double v2 = 0.0, double v3 = 0.0, double v4 = 0.0);
+	Vector4d(float v1 = 0.0, float v2 = 0.0, float v3 = 0.0, float v4 = 0.0);
 	float vec[4];
 	float &operator[](int i);
 };

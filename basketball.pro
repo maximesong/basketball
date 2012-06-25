@@ -9,8 +9,8 @@ INCLUDEPATH += . src/ src/lib
 QT += opengl
 
 unix {
-LIBS += -lglut -lGL -lGLU
-QT += phonon
+LIBS += -lglut -lGLU
+QT += phonon opengl
 config += debug
 }
 
@@ -30,7 +30,7 @@ MOC_DIR += ./tmp
 HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h \
            src/modeling.h src/basketball.h src/BasketballWidget.h
 
-SOURCES += lib/GLee.c lib/gltools.cpp lib/math3d.cpp  \
+SOURCES += lib/GLee.c  lib/math3d.cpp  \
            src/modeling.cpp src/BasketballWidget.cpp src/main.cpp
 
 

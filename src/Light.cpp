@@ -1,6 +1,8 @@
 #include "Light.h"
 
 #include <string.h>
+#include <iostream>
+using namespace std;
 
 Light::Light(Vector4d pos, Vector4d ambient, Vector4d diffuse,
       Vector4d specular)
