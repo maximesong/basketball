@@ -12,6 +12,8 @@ GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+const char *szTextureFiles[] = {"texture/houston.tga", "texture/basketball.tga"};
+
 BasketballWidget::BasketballWidget(QWidget *parent):
 	QGLWidget(parent)
 {
@@ -36,7 +38,6 @@ void BasketballWidget::initializeGL()
 	m_world->lights.append(light0);
 
 	m_sound = new Sound();
-
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
@@ -109,8 +110,6 @@ void BasketballWidget::initializeGL()
 		glTexParameteri(GL_TEXTURE_2D, 
 				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
-
-
 
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));

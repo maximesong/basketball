@@ -43,7 +43,7 @@ void drawSphere(GLfloat fRadius, GLint iSlices, GLint iStacks);
 	GLfloat lightPos[4];
 	GLfloat lights[4];
 
-	const char *szTextureFiles[5];
+//	const char *szTextureFiles[NUM_TEXTURES];
 	M3DMatrix44f mShadowMatrix;
 
 	Sound *m_sound;
