@@ -13,6 +13,9 @@ using namespace std;
 GLfloat eyex=2,eyey=2,eyez=15;
 
 GLfloat fLightPos[4]   = { 10.0f, 18.0f, 10.0f, 1.0f };  // Point source
+GLfloat fSpotPos[4] = {2.0f, 3.0f, 10.0f, 1.0f }; // Point source
+GLfloat fSpotDirection[4] = {-10.0f, 5.0f, -3.0f, 0.0f }; // Point source
+
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -125,13 +128,29 @@ void init()
 	glEnable(GL_MULTISAMPLE_ARB);
     
 	// Setup light parameters
+
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, fNoLight);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, fLowLight);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, fBrightLight);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, fBrightLight);
+/*	
+	glLightfv(GL_LIGHT0, GL_POSITION, fSpotPos);
+	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF, 40);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, fSpotDirection);
+*/
 	glEnable(GL_LIGHTING);
+
 	glEnable(GL_LIGHT0);
-    
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, fLowLight);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, fLowLight);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, fLowLight);
+	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 10);
+	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2.0); 
+	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
+	glEnable(GL_LIGHT1);
+
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 
 
@@ -211,7 +230,13 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glLoadIdentity();
 
+/*
 	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
+	fSpot[0] = ball.x;
+	fSpotPos[1] = ball.y;
+	fSpotPos[2] = ball.z;
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotPos);
+*/
 
 	if (eyey > 2) {
 		eyey -= 0.05;
@@ -260,7 +285,7 @@ void display()
 
 	glRotatef(ball.rotation, ball.rx, ball.ry, ball.rz);
 
-//	cout << ball.rotation << "\t" << ball.x << "\t" << ball.y << "\t" << ball.z << endl;
+	cout << ball.rotation << "\t" << ball.x << "\t" << ball.y << "\t" << ball.z << endl;
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fNoLight);
 	gltDrawSphere(ball.r, 40, 20);

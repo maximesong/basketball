@@ -8,6 +8,9 @@ DEPENDPATH += . lib src
 INCLUDEPATH += . src/ src/lib
 QT += opengl
 
+#SOURCES += src/main.cpp  src/BasketballWidget.cpp 
+SOURCES += src/basketball.cpp src/lib/gltools.cpp
+
 unix {
 LIBS += -lglut -lGLU
 QT += phonon opengl
@@ -28,10 +31,11 @@ MOC_DIR += ./tmp
 
 # Input
 HEADERS += lib/GLee.h lib/glfrustum.h lib/gltools.h lib/math3d.h \
-           src/modeling.h src/basketball.h src/BasketballWidget.h
+           src/modeling.h src/basketball.h 
 
 SOURCES += lib/GLee.c  lib/math3d.cpp  \
-           src/modeling.cpp src/BasketballWidget.cpp src/main.cpp
+           src/modeling.cpp
+
 
 
 HEADERS += Sound.h \
