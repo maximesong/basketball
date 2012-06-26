@@ -13,7 +13,7 @@ using namespace std;
 GLfloat eyex=2,eyey=2,eyez=15;
 
 GLfloat fLightPos[4]   = { 10.0f, 18.0f, 10.0f, 1.0f };  // Point source
-GLfloat fSpotPos[4] = {2.0f, 3.0f, 10.0f, 1.0f }; // Point source
+GLfloat fSpotPos[4] = {2.0f, 3.0f, 5.0f, 1.0f }; // Point source
 GLfloat fSpotDirection[4] = {-10.0f, 5.0f, -3.0f, 0.0f }; // Point source
 
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -22,9 +22,13 @@ GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 #define GROUND_TEXTURE  0
 #define BALL_TEXTURE   1
-#define NUM_TEXTURES    2
+#define AUDIENCE_TEXTURE 2
+#define NUM_TEXTURES    3
+
 GLuint  textures[NUM_TEXTURES];
-const char *szTextureFiles[] = {"texture/houston.tga", "texture/basketball.tga"};
+const char *szTextureFiles[] = { "texture/houston.tga", 
+					 "texture/basketball.tga", 
+					 "texture/audience.tga"};
 
 M3DMatrix44f mShadowMatrix;
 
@@ -37,6 +41,7 @@ Phonon::MediaObject *player;
 
 void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d)
 {
+//	glBindTexture(GL_TEXTURE_2D, textures[AUDIENCE_TEXTURE]);
 	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -66,15 +71,12 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
         glVertex3f(x-w, y+h, z+d);
 
 	glTexCoord2f(1.0, 0.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
         glVertex3f(x+w, y+h, z+d);
 
 	glTexCoord2f(1.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
         glVertex3f(x+w, y+h, z-d);
 
 	glTexCoord2f(0.0, 1.0);
-	glNormal3f(0.0f, 1.0f, 0.0f);
         glVertex3f(x-w, y+h, z-d);
 
         //left
@@ -88,6 +90,86 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
         glVertex3f(x+w, y-h, z+d);
         glVertex3f(x+w, y-h, z-d);
         glVertex3f(x+w, y+h, z-d);
+ 
+        glEnd();
+}
+
+void drawGym(GLfloat x, GLfloat y, GLfloat z, 
+		     GLfloat w, GLfloat h, GLfloat d)
+{
+//	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, textures[AUDIENCE_TEXTURE]);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBegin(GL_QUADS);
+
+        //front
+
+	glNormal3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x-w, y+h, z-d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x-w, y-h, z-d);
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x+w, y-h, z-d);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x+w, y+h, z-d);
+
+        //back
+	glNormal3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x+w, y+h, z+d);
+	glTexCoord2f(0.0, 0.0);   
+        glVertex3f(x+w, y-h, z+d);
+	glTexCoord2f(1.0, 0.0); 
+        glVertex3f(x-w, y-h, z+d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x-w, y+h, z+d);
+/*
+        //top, all point up
+	glNormal3f(0.0f, -1.0f, 0.0f);
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x-w, y+h, z+d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x+w, y+h, z+d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x+w, y+h, z-d);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x-w, y+h, z-d);
+
+        //bottom
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x-w, y-h, z+d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x+w, y-h, z+d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x+w, y-h, z-d);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x-w, y-h, z-d);
+*/
+
+        //left
+	glNormal3f(-1.0f, 0.0f, 0.0f);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x-w, y+h, z+d);
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x-w, y-h, z+d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x-w, y-h, z-d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x-w, y+h, z-d);
+
+	// right
+	glNormal3f(-1.0f, 0.0f, 0.0f);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x+w, y+h, z-d);
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x+w, y-h, z-d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x+w, y-h, z+d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x+w, y+h, z+d);
  
         glEnd();
 }
@@ -142,14 +224,14 @@ void init()
 
 	glEnable(GL_LIGHT0);
 
-	glLightfv(GL_LIGHT1, GL_AMBIENT, fLowLight);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, fLowLight);
-	glLightfv(GL_LIGHT1, GL_SPECULAR, fLowLight);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, fNoLight);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, fNoLight);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, fNoLight);
 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 10);
-	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2.0); 
+	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 10.0); 
 	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
-	glEnable(GL_LIGHT1);
+//	glEnable(GL_LIGHT1);
 
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 
@@ -187,8 +269,9 @@ void init()
 		// Load this texture map
 		pBytes = gltLoadTGA(szTextureFiles[i], &iWidth, &iHeight, 
 				    &iComponents, &eFormat);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, iComponents, iWidth, iHeight, 
-				  eFormat, GL_UNSIGNED_BYTE, pBytes);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, iComponents, iWidth, 
+				  iHeight, eFormat, GL_UNSIGNED_BYTE, 
+				  pBytes);
 		free(pBytes);
         
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -230,8 +313,8 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	glLoadIdentity();
 
-/*
 	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
+/*
 	fSpot[0] = ball.x;
 	fSpotPos[1] = ball.y;
 	fSpotPos[2] = ball.z;
@@ -250,7 +333,7 @@ void display()
 //	glDepthMask(GL_TRUE);
 
 	drawGround(0, -0.3, 0, 28, 0.3, 15);
-
+	drawGym(0, 2.5, 0, 28, 2.5, 15);
 	glPushMatrix();
 	glTranslatef(ball.x, ball.y, ball.z);
 
@@ -314,6 +397,19 @@ void TimerFunction(int)
 	glutTimerFunc(FRAMES, TimerFunction, 1);
 }
 
+void processNormalKeys(unsigned char key,int x,int y)
+{
+	cout << key << endl;
+	if(key == 'w')
+		eyez += 1;
+	else if (key == 's')
+		eyez -= 1;
+	else if(key == 'd')
+		eyex += 1;
+	else if (key == 'a')
+		eyex -= 1;
+}
+
 int main(int argc, char *argv[])
 {
 	#ifdef __linux__
@@ -326,6 +422,7 @@ int main(int argc, char *argv[])
 	glutCreateWindow("Basketball Demo");
 	init();
 	glutDisplayFunc(display);
+	glutKeyboardFunc(processNormalKeys);
 	glutReshapeFunc(reshape);
 	glutTimerFunc(FRAMES, TimerFunction, 1);
 	glutMainLoop();
