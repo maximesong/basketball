@@ -14,8 +14,8 @@ using namespace std;
 GLfloat eyex=2,eyey=2,eyez=15;
 
 GLfloat fLightPos[4]   = { 10.0f, 18.0f, 10.0f, 1.0f };  // Point source
-GLfloat fSpotPos[4] = {2.0f, 3.0f, 5.0f, 1.0f }; // Point source
-GLfloat fSpotDirection[4] = {-10.0f, 5.0f, -3.0f, 0.0f }; // Point source
+GLfloat fSpotPos[4] = {0.0f, 0.0f, 50.0f, 1.0f }; // Point source
+GLfloat fSpotDirection[4] = {4.0f, 5.0f, -3.0f, 1.0f }; // Point source
 
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
@@ -235,7 +235,7 @@ void init()
 	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 10.0); 
 	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
-//	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT1);
 
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 
@@ -292,7 +292,7 @@ void init()
 	ball.x = -10;
 	ball.y = 5;
 	ball.z = -3;
-	ball.r = 0.1;
+	ball.r = 0.12;
 	ball.vx = 5;
 	ball.vy = 1.0;
 	ball.vz = 3.0;
@@ -332,6 +332,9 @@ void display()
 
 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
 		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+
+	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
 
 	glPushMatrix();
 	glTranslatef(-22, 2, 10.3);
@@ -385,7 +388,7 @@ void display()
 
 	glRotatef(ball.rotation, ball.rx, ball.ry, ball.rz);
 
-	cout << ball.rotation << "\t" << ball.x << "\t" << ball.y << "\t" << ball.z << endl;
+//	cout << ball.rotation << "\t" << ball.x << "\t" << ball.y << "\t" << ball.z << endl;
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fNoLight);
 	gltDrawSphere(ball.r, 40, 20);
@@ -425,6 +428,27 @@ void processNormalKeys(unsigned char key,int x,int y)
 		eyex += 1;
 	else if (key == 'a')
 		eyex -= 1;
+	else if (key == 'e')
+		eyey += 1;
+	else if (key == 'q')
+		eyey -= 1;
+	else if (key == 'i')
+		ball.vz += 1;
+	else if (key == 'j')
+		ball.vx -= 1;
+	else if (key == 'l')
+		ball.vx += 1;
+	else if (key == 'k')
+		ball.vz -= 1;
+	else if (key == 'o') {
+		if (ball.is_rolling) {
+			ball.is_almost_rolling = 0;
+			ball.is_rolling = 0;
+		}
+		ball.vy += 1;
+	}
+	else if (key == 'u')
+		ball.vy -= 1;
 }
 
 int main(int argc, char *argv[])
