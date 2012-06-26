@@ -333,7 +333,17 @@ void display()
 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
 		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
 
+	glPushMatrix();
+	glTranslatef(-22, 2, 10.3);
+	glRotatef(90, 0, 1, 0);
 	board->displayBoard();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(22, 2, 10.3);
+	glRotatef(-90, 0, 1, 0);
+	board->displayBoard();
+	glPopMatrix();
 
 	glTranslatef(0, 0, 10);
 
