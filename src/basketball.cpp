@@ -7,6 +7,7 @@ using namespace std;
 
 
 #include "modeling.h"
+#include "Board.h"
 
 #define FRAMES 33
 
@@ -19,6 +20,8 @@ GLfloat fSpotDirection[4] = {-10.0f, 5.0f, -3.0f, 0.0f }; // Point source
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+Board *board;
 
 #define GROUND_TEXTURE  0
 #define BALL_TEXTURE   1
@@ -181,6 +184,7 @@ void init()
 //	cout << ms.discType() << endl;
 	player = Phonon::createPlayer(Phonon::MusicCategory, 
 				      Phonon::MediaSource("music/hit.wav"));
+	board  = new Board(MEDIUM);
 	player->play();
 	#endif
 	// Black background
@@ -325,8 +329,11 @@ void display()
 		eyey -= 0.05;
 	}
 	
+
 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
 		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+
+	board->displayBoard();
 
 	glTranslatef(0, 0, 10);
 

@@ -9,7 +9,9 @@ INCLUDEPATH += . src/ src/lib
 QT += opengl
 
 #SOURCES += src/main.cpp  src/BasketballWidget.cpp 
-SOURCES += src/basketball.cpp src/lib/gltools.cpp
+SOURCES += src/basketball.cpp lib/gltools.cpp lib/Board.cpp lib/Vector3d.cpp lib/ring.cpp lib/gltx.c
+
+HEADERS += src/lib/gltx.h
 
 unix {
 LIBS += -lglut -lGLU
@@ -38,16 +40,16 @@ SOURCES += lib/GLee.c  lib/math3d.cpp  \
 
 
 
-HEADERS += Sound.h \
-           World.h \
-           Vector.h \
-           Light.h \
-           BallModel.h \
-           FlatModel.h \
+#HEADERS += Sound.h \
+#           World.h \
+#           Vector.h \
+#           Light.h \
+#           BallModel.h \
+#           FlatModel.h \
 
-SOURCES += Sound.cpp \
-           World.cpp \
-           Vector.cpp \
-           Light.cpp \
-           BallModel.cpp \
-           FlatModel.cpp \
+#SOURCES += Sound.cpp \
+#           World.cpp \
+#          Vector.cpp \
+#           Light.cpp \
+#           BallModel.cpp \
+#           FlatModel.cpp \
