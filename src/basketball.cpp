@@ -25,6 +25,8 @@ GLfloat fVeryLowLight[] = { 0.05f, 0.05f, 0.05f, 1.0f };
 GLfloat fStrongLight[] = {0.8f, 0.8f, 0.8f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+int light0_on;
+
 Board *board;
 
 #define GROUND_TEXTURE  0
@@ -64,7 +66,7 @@ void init()
 #endif
 	board  = new Board(MEDIUM);
 
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f );
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
 
 	init_lights();
@@ -112,6 +114,7 @@ void init_light0()
  	glLightfv(GL_LIGHT0, GL_DIFFUSE, fBrightLight);
  	glLightfv(GL_LIGHT0, GL_SPECULAR, fNoLight);
 	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
+	light0_on = 1;
 //    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 50.0); //设置聚光的范围为45度。
 //    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,2.0);    //设置聚光灯的聚光强度。
     
@@ -126,16 +129,16 @@ void init_light1()
  	glLightfv(GL_LIGHT1, GL_SPECULAR, fBrightLight);
  	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
 
-// 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
-//	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
-//	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
+ 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 20);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
+	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
 }
 
 void init_lights()
 {
 	glEnable(GL_LIGHTING);        //启动光照
 
-//	init_light0();
+	init_light0();
 	init_light1();
 
 	glEnable(GL_COLOR_MATERIAL);
@@ -190,6 +193,9 @@ void init_ball()
 	env.gravity = -9.8;
 	env.air_density = 1.25;
 
+	eyex=2;
+	eyey=2;
+	eyez=15;
 	eyey += ball.y;
 }
 
@@ -197,8 +203,7 @@ void init_ball()
 
 void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d)
 {
-	glDisable(GL_TEXTURE_2D);
-//	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 //	glBindTexture(GL_TEXTURE_2D, textures[AUDIENCE_TEXTURE]);
 	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -258,27 +263,19 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 	for (int i = 0;i < 300;++i)
 	  for (int j = 0;j < 200;++j)
 	  {
-//	    glTexCoord2f(i / 300.0f, j / 200.0f);
-	    glTexCoord2f(xFrom + (xTo - xFrom) * i / 300.0f,
-			 yFrom + (yTo - yFrom) * j / 200.0f);
+	    glTexCoord2f(i / 300.0f, j / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
 			   0.0,
 			   yFrom + (yTo - yFrom) * j / 200.0f);
-//	    glTexCoord2f( i / 300.0f, (j + 1) / 200.0f);
-	    glTexCoord2f(xFrom + (xTo - xFrom) * i / 300.0f,
-	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
+	    glTexCoord2f( i / 300.0f, (j + 1) / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-//	    glTexCoord2f((i + 1) / 300.0f, (j + 1) / 200.0f);
-	    glTexCoord2f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
-			 yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
+	    glTexCoord2f((i + 1) / 300.0f, (j + 1) / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-//	    glTexCoord2f((i + 1) / 300.0f, j / 200.0f);
-	    glTexCoord2f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
-			 yFrom + (yTo - yFrom) * j / 200.0f);
+	    glTexCoord2f((i + 1) / 300.0f, j / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * j / 200.0f);
@@ -345,28 +342,6 @@ void drawGym(GLfloat x, GLfloat y, GLfloat z,
         glVertex3f(x-w, y-h, z+d);
 	glTexCoord2f(1.0, 1.0);
         glVertex3f(x-w, y+h, z+d);
-/*
-//top, all point up
-glNormal3f(0.0f, -1.0f, 0.0f);
-glTexCoord2f(0.0, 0.0);
-glVertex3f(x-w, y+h, z+d);
-glTexCoord2f(1.0, 0.0);
-glVertex3f(x+w, y+h, z+d);
-glTexCoord2f(1.0, 1.0);
-glVertex3f(x+w, y+h, z-d);
-glTexCoord2f(0.0, 1.0);
-glVertex3f(x-w, y+h, z-d);
-
-//bottom
-glTexCoord2f(0.0, 0.0);
-glVertex3f(x-w, y-h, z+d);
-glTexCoord2f(1.0, 0.0);
-glVertex3f(x+w, y-h, z+d);
-glTexCoord2f(1.0, 1.0);
-glVertex3f(x+w, y-h, z-d);
-glTexCoord2f(0.0, 1.0);
-glVertex3f(x-w, y-h, z-d);
-*/
 
         //left
 	glNormal3f(-1.0f, 0.0f, 0.0f);
@@ -488,13 +463,13 @@ void play_sound()
 void draw_boards()
 {
  	glPushMatrix();
- 	glTranslatef(-22, 2, 10.3);
+ 	glTranslatef(-22, 2, -0.5);
  	glRotatef(90, 0, 1, 0);
  	board->displayBoard();
  	glPopMatrix();
 
  	glPushMatrix();
- 	glTranslatef(22, 2, 10.3);
+ 	glTranslatef(22, 2, -0.5);
  	glRotatef(-90, 0, 1, 0);
  	board->displayBoard();
  	glPopMatrix();
@@ -502,24 +477,17 @@ void draw_boards()
 
 void set_lights()
 {
+	/* Light 0 */
 	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
 
-// //	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
-// //	glLightfv(GL_LIGHT0, GL_POSITION, fSpotPos);
-// //	glLightf(GL_LIGHT0,GL_SPOT_CUTOFF, 40);
-// //	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, fSpotDirection);
-
-// 	glLightfv(GL_LIGHT1, GL_AMBIENT, fLowLight);
-// 	glLightfv(GL_LIGHT1, GL_DIFFUSE, fBrightLight);
-// 	glLightfv(GL_LIGHT1, GL_SPECULAR, fLowLight);
+	/* Light 1 */
+	fSpotPos[0] = ball.x;
+	fSpotPos[2] = ball.z;
  	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
- 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
+	fSpotDirection[0] = fSpotPos[0] - ball.x;
+	fSpotDirection[2] = fSpotPos[2] - ball.z;
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
-	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
-
-// //	glLightfv(GL_LIGHT1, GL_POSITION, fLightPos);
-// //	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
-// //	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
+	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 5); 
 }
 
 void display()
@@ -528,16 +496,14 @@ void display()
 		GL_STENCIL_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-// 	if (eyey > 2) {
-// 		eyey -= 0.05;
-// 	}
-// 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
-//		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
-
-	gluLookAt(eyex, eyey, eyez, 
-		  0, 0, 0,
-		  0, 0, -1);
+ 	if (eyey > 2) {
+ 		eyey -= 0.05;
+ 	}
+ 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
+		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+//	gluLookAt(eyex, eyey, eyez, 
+//		  0, 0, 0,
+//		  0, 0, -1);
 
 	set_lights();
 
@@ -600,6 +566,16 @@ void processNormalKeys(unsigned char key,int,int)
 	}
 	else if (key == 'u')
 		ball.vy -= 1;
+	else if (key == 'r')
+		init_ball();
+	else if (key == 'b')
+		if (light0_on) {
+			light0_on = 0;
+			glDisable(GL_LIGHT0);
+		} else {
+			light0_on = 1;
+			glEnable(GL_LIGHT0);
+		}
 }
 
 int main(int argc, char *argv[])
