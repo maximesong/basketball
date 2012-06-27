@@ -24,6 +24,11 @@ GLfloat fLowLight[] = { 0.25f, 0.25f, 0.25f, 1.0f };
 GLfloat fVeryLowLight[] = { 0.05f, 0.05f, 0.05f, 1.0f };
 GLfloat fStrongLight[] = {0.8f, 0.8f, 0.8f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+GLfloat fRedLight[] = { 0.8f, 0.0f, 0.0f, 1.0f };
+
+GLfloat fEllipsePos[] = { 0.0f, 8.0f, 0.0f, 1.0f };
+GLfloat fEllipseDirection[] = {0.0f, 0.0f, 0.0f}; // Point source
+double angle = 0;
 
 GLboolean ambientShadowAvailable = GL_FALSE;
 GLboolean npotTexturesAvailable = GL_FALSE;
@@ -95,7 +100,7 @@ void init()
 	board  = new Board(MEDIUM);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-
+	angle = 0;
 //	SetupRC();
 	init_lights();
 	init_textures();
@@ -163,20 +168,36 @@ void init_light1()
 	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
 }
 
+
+void init_light2()
+{
+	glEnable(GL_LIGHT2);
+
+ 	glLightfv(GL_LIGHT2, GL_AMBIENT, fLowLight);
+ 	glLightfv(GL_LIGHT2, GL_DIFFUSE, fBrightLight);
+ 	glLightfv(GL_LIGHT2, GL_SPECULAR, fBrightLight);
+ 	glLightfv(GL_LIGHT2, GL_POSITION, fEllipsePos);
+
+ 	glLightf(GL_LIGHT2,GL_SPOT_CUTOFF, 10);
+	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, fEllipseDirection);
+	glLightf( GL_LIGHT2 , GL_SPOT_EXPONENT , 20); 
+}
+
 void init_lights()
 {
 	glEnable(GL_LIGHTING);        //启动光照
 
 	init_light0();
 	init_light1();
+	init_light2();
 
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fStrongLight);
 	glMaterialfv(GL_FRONT, GL_AMBIENT, fStrongLight);
 	glMaterialf(GL_FRONT, GL_SHININESS, 64);
-	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, 
-		      GL_SEPARATE_SPECULAR_COLOR);    
+//	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, 
+//		      GL_SEPARATE_SPECULAR_COLOR);    
 
 	glCullFace(GL_BACK);        //剔除背面
 	glEnable(GL_CULL_FACE);        //启动剔除
@@ -184,6 +205,7 @@ void init_lights()
 	glEnable(GL_DEPTH_TEST);    //启动深度检测
 	glFrontFace(GL_CCW);        //定义逆时针为正面
 }
+
 
 void init_shadow()
 {
@@ -206,7 +228,7 @@ void init_ball()
 	ball.x = -10;
 	ball.y = 5;
 	ball.z = -3;
-	ball.r = 0.12;
+	ball.r = 0.24;
 	ball.vx = 5;
 	ball.vy = 1.0;
 	ball.vz = 3.0;
@@ -446,6 +468,9 @@ void draw_ball()
 
 	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
 	init_shadow();
+	// cout << fSpotPos[0] << "\t" << fSpotPos[1] << "\t" <<
+	// 	fSpotPos[2] << endl <<
+	// 	ball.x << "\t" << ball.y << "\t" << ball.z << endl;
         // Draw shadows first
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
@@ -486,7 +511,6 @@ void draw_ball_shadow()
 {
 	glPushMatrix();
 
- 	glTranslatef(ball.x, ball.y, ball.z);
 	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
 	init_shadow();
         // Draw shadows first
@@ -498,6 +522,9 @@ void draw_ball_shadow()
         glEnable(GL_STENCIL_TEST);
 
 	glMultMatrixf(mShadowMatrix);
+ 	// gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
+	// 	  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+ 	glTranslatef(ball.x, ball.y, ball.z);
         glColor4f(0.00f, 0.00f, 0.00f, .6f);  // Shadow color
 	gltDrawSphere(ball.r, 40, 20);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -545,6 +572,21 @@ void set_lights()
 	fSpotDirection[2] = fSpotPos[2] - ball.z;
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
 	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 5); 
+
+	/* Light 2 */
+	if (angle > 2 * PI) {
+		angle = 0;
+	} else {
+		angle += PI / 80;
+	}
+	fEllipseDirection[1] = -1;
+	fEllipsePos[0] =  cos(angle) * 20;
+	fEllipsePos[2] = sin(angle) * 10;
+
+	glLightfv(GL_LIGHT2, GL_POSITION, fEllipsePos);
+	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, fEllipseDirection);
+//	glLightfv(GL_LIGHT2, GL_POSITION, fSpotPos);
+//	glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, fSpotDirection);
 }
 
 void display()
