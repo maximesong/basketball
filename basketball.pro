@@ -10,9 +10,8 @@ QT += opengl
 
 #SOURCES += src/main.cpp  src/BasketballWidget.cpp 
 #SOURCES +=src/test.cpp
-SOURCES += src/basketball.cpp lib/gltools.cpp lib/Board.cpp lib/Vector3d.cpp lib/ring.cpp lib/gltx.c
+SOURCES += src/basketball.cpp lib/gltools.cpp lib/Board.cpp lib/Vector3d.cpp lib/ring.cpp
 
-HEADERS += src/lib/gltx.h
 
 unix {
 LIBS += -lglut -lGLU

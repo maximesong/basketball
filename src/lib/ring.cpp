@@ -55,7 +55,7 @@ Ring::Ring(double bigR, double smallR, int faces) {
 
 void Ring::drawRing() {
     glPushMatrix();
-    glColor3d(1.0, 0.5, 0);
+    glColor3f(1.0, 0.5, 0);
     glTranslated(0.0, 1.5, 2.3);
     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
     glBegin(GL_QUADS);
@@ -67,7 +67,7 @@ void Ring::drawRing() {
         glVertex3f(_vertaxList[faceLocation[i][3]].getValueAt(X), _vertaxList[faceLocation[i][3]].getValueAt(Y), _vertaxList[faceLocation[i][3]].getValueAt(Z));
     }
     glEnd();
-    glColor3d(1.0, 1.0, 1.0);
+    glColor3f(1.0, 1.0, 1.0);
     glPopMatrix();
 }
 

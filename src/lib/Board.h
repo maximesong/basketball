@@ -1,10 +1,14 @@
 #pragma once
 
+#ifdef __linux__
+
 #include <GL/glut.h>
 #include <GL/glu.h>
-extern "C" {
-#include "gltx.h"
-}
+#else
+#include "glu.h"
+#include "glut.h"
+#endif
+
 #include "boardInfo.h"
 #include "Vector3d.h"
 #include "defines.h"
@@ -16,9 +20,7 @@ using namespace std;
 class Board
 {
 private:
-	GLTXimage *courtImage;
-    GLTXimage *crowdImage;
-    int score[2];
+	int score[2];
 	Ring* newRing;
 public:
 	Board(double level);

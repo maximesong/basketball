@@ -1,7 +1,13 @@
 #ifndef _RING_H
 #define	_RING_H
 #include <cmath>
+
+#ifdef __linux__
 #include <GL/glut.h>
+#else
+#include "glut.h"
+#endif
+
 #include "Vector3d.h"
 #include "defines.h"
 

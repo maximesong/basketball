@@ -87,7 +87,6 @@ void init_lights();
 void init_ball();
 void init_shadow();
 void RegenerateShadowMap();
-void SetupRC();
 void set_lights();
 
 void init()
@@ -758,165 +757,6 @@ void RegenerateShadowMap()
 }
 
 
-void SetupRC()
-{
-	fprintf(stdout, "Shadow Mapping Demo\n\n");
-
-	// Make sure required functionality is available!
-	if (!GLEE_VERSION_1_4 && !GLEE_ARB_shadow)
-	{
-		fprintf(stderr, "Neither OpenGL 1.4 nor GL_ARB_shadow"
-                        " extension is available!\n");
-		exit(0);
-	}
-
-	// Check for optional extensions
-	if (GLEE_ARB_shadow_ambient)
-	{
-		ambientShadowAvailable = GL_TRUE;
-	}
-	else
-	{
-		fprintf(stderr, "GL_ARB_shadow_ambient extension not available!\n");
-		fprintf(stderr, "Extra ambient rendering pass will be required.\n\n");
-	}
-
-	if (GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two)
-	{
-		npotTexturesAvailable = GL_TRUE;
-	}
-	else
-	{
-		fprintf(stderr, "Neither OpenGL 2.0 nor GL_ARB_texture_non_power_of_two extension\n");
-		fprintf(stderr, "is available!  Shadow map will be lower resolution (lower quality).\n\n");
-	}
-
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
-
-	fprintf(stdout, "Controls:\n");
-	fprintf(stdout, "\tRight-click for menu\n\n");
-	fprintf(stdout, "\tx/X\t\tMove +/- in x direction\n");
-	fprintf(stdout, "\ty/Y\t\tMove +/- in y direction\n");
-	fprintf(stdout, "\tz/Z\t\tMove +/- in z direction\n\n");
-	fprintf(stdout, "\tf/F\t\tChange polygon offset factor +/-\n\n");
-	fprintf(stdout, "\tq\t\tExit demo\n\n");
-    
-	// Black background
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-
-	// Hidden surface removal
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glPolygonOffset(factor, 0.0f);
-
-	// Set up some lighting state that never changes
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_LIGHT0);
-
-	// Set up some texture state that never changes
-	glGenTextures(1, &shadowTextureID);
-	glBindTexture(GL_TEXTURE_2D, shadowTextureID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
-	if (ambientShadowAvailable)
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FAIL_VALUE_ARB, 
-				0.5f);
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-
-	RegenerateShadowMap();
-}
-
-void DrawModels(GLboolean)
-{
-	/* empty */
-}
-
-void RenderScene(void)
-{
-	// Track camera angle
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble ar = (GLdouble)windowWidth / (GLdouble)windowHeight;
-	glFrustum(-ar * cameraZoom, ar * cameraZoom, -cameraZoom,
-		  cameraZoom, 1.0, 1000.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(eyex, eyey, eyez, 
-		  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-	
-	glViewport(0, 0, windowWidth, windowHeight);
-    
-	// Track light position
-//	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-	// Clear the window with current clearing color
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (!ambientShadowAvailable)
-	{
-		GLfloat lowAmbient[4] = {0.1f, 0.1f, 0.1f, 1.0f};
-		GLfloat lowDiffuse[4] = {0.35f, 0.35f, 0.35f, 1.0f};
-
-		// Because there is no support for an "ambient"
-		// shadow compare fail value, we'll have to
-		// draw an ambient pass first...
-		glLightfv(GL_LIGHT0, GL_AMBIENT, lowAmbient);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, lowDiffuse);
-
-		// Draw objects in the scene, including base plane
-		DrawModels(GL_TRUE);
-
-		// Enable alpha test so that shadowed fragments are discarded
-		glAlphaFunc(GL_GREATER, 0.9f);
-		glEnable(GL_ALPHA_TEST);
-	}
-
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-
-        // Set up shadow comparison
-        glEnable(GL_TEXTURE_2D);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, 
-                        GL_COMPARE_R_TO_TEXTURE);
-
-        // Set up the eye plane for projecting the shadow map on the scene
-        glEnable(GL_TEXTURE_GEN_S);
-        glEnable(GL_TEXTURE_GEN_T);
-        glEnable(GL_TEXTURE_GEN_R);
-        glEnable(GL_TEXTURE_GEN_Q);
-        glTexGenfv(GL_S, GL_EYE_PLANE, &textureMatrix[0]);
-        glTexGenfv(GL_T, GL_EYE_PLANE, &textureMatrix[4]);
-        glTexGenfv(GL_R, GL_EYE_PLANE, &textureMatrix[8]);
-        glTexGenfv(GL_Q, GL_EYE_PLANE, &textureMatrix[12]);
-
-        // Draw objects in the scene, including base plane
-        DrawModels(GL_TRUE);
-
-        glDisable(GL_ALPHA_TEST);
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_TEXTURE_GEN_S);
-        glDisable(GL_TEXTURE_GEN_T);   
-	glDisable(GL_TEXTURE_GEN_R); 
-	glDisable(GL_TEXTURE_GEN_Q);  
-
-	if (glGetError() != GL_NO_ERROR)
-		fprintf(stderr, "GL Error!\n");
-
-	// Flush drawing commands
-	glutSwapBuffers();
-}
-
 int main(int argc, char *argv[])
 {
 #ifdef __linux__
@@ -928,7 +768,6 @@ int main(int argc, char *argv[])
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("Basketball Demo");
 	init();
-//	glutDisplayFunc(RenderScene);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(processNormalKeys);
 	glutReshapeFunc(reshape);
