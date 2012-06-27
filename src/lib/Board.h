@@ -12,9 +12,6 @@ extern "C" {
 
 using namespace std;
 
-static GLuint courtTexture;
-static GLuint crowdTexture;
-static GLuint billboardTexture;
 
 class Board
 {

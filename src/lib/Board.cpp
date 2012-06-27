@@ -1,26 +1,6 @@
 #include "Board.h"
 
 Board::Board(double level) {
-//    courtImage = gltxReadRGB("texture/fullcourt.rgb");
-
-//    glGenTextures(1, &courtTexture);
-//    glBindTexture(GL_TEXTURE_2D, courtTexture);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, courtImage->width, courtImage->height,
-//            0, GL_RGB, GL_UNSIGNED_BYTE, courtImage->data);
-
-	//  crowdImage = gltxReadRGB("texture/1.rgb");
-
-//    glGenTextures(1, &crowdTexture);
-//    glBindTexture(GL_TEXTURE_2D, crowdTexture);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, crowdImage->width, crowdImage->height,
-//            0, GL_RGB, GL_UNSIGNED_BYTE, crowdImage->data);
-
     newRing = new Ring(0.6, level, 100);
 }
 
@@ -209,40 +189,3 @@ void Board::drawWall(double x, double y, int parts, bool withTexture, GLuint tex
     if (withTexture) glDisable(GL_TEXTURE_2D);
 }
 
-void Board::drawCourt() {
-
-    Vector3d normal(0.0,1.0,0.0);
-    //floor
-    glPushMatrix();
-    glTranslated(-8.0, -2.0, 0.0);
-    drawWall(16, 22, 100, true, courtTexture, 1, true, normal);
-    glPopMatrix();
-
-    //Roof
-    glPushMatrix();
-    glTranslated(8.0, 6.0, 0.0);
-    glRotated(180.0, 0, 0, 1);
-    drawWall(16, 22, 100, true, crowdTexture, 2, false, normal);
-    glPopMatrix();
-
-    //Left
-    glPushMatrix();
-    glTranslated(-8.0, 6.0, 0.0);
-    glRotated(-90.0, 0, 0, 1);
-    drawWall(8, 22, 64, true, crowdTexture, 2, false, normal);
-    glPopMatrix();
-
-    //Right
-    glPushMatrix();
-    glTranslated(8.0, -2.0, 0.0);
-    glRotated(90.0, 0, 0, 1);
-    drawWall(8, 22, 64, true, crowdTexture, 2, false, normal);
-    glPopMatrix();
-
-    //Back
-    glPushMatrix();
-    glTranslated(-8.0, 6.0, 0.0);
-    glRotated(90.0, 1, 0, 0);
-    drawWall(16, 8, 64, true, crowdTexture, 2, false, normal);
-    glPopMatrix();
-}
