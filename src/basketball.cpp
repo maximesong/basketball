@@ -5,6 +5,7 @@ using namespace std;
 
 #include <QTimer>
 
+#define PIECES
 
 #include "modeling.h"
 #include "Board.h"
@@ -14,8 +15,8 @@ using namespace std;
 GLfloat eyex=2,eyey=2,eyez=15;
 
 GLfloat fLightPos[4]   = { 0.0f, 18.0f, 0.0f, 1.0f };  // Point source
-GLfloat fSpotPos[4] = {0.0f, 5.0f, 0.0f, 1.0f }; // Point source
-GLfloat fSpotDirection[] = {0.0f, 0.0f, 0.0f}; // Point source
+GLfloat fSpotPos[4] = {0.0f, 8.0f, 0.0f, 1.0f }; // Point source
+GLfloat fSpotDirection[] = {0.0f, -1.0f, 0.0f}; // Point source
 GLfloat fAllPos[] = {0.0f, 0.0f, 0.0f, 0.0f}; // Point source
 
 GLfloat fNoLight[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -110,7 +111,7 @@ void init_light0()
  	glLightfv(GL_LIGHT0, GL_AMBIENT, fLowLight);
  	glLightfv(GL_LIGHT0, GL_DIFFUSE, fBrightLight);
  	glLightfv(GL_LIGHT0, GL_SPECULAR, fNoLight);
-
+	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
 //    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 50.0); //设置聚光的范围为45度。
 //    glLightf(GL_LIGHT0,GL_SPOT_EXPONENT,2.0);    //设置聚光灯的聚光强度。
     
@@ -122,19 +123,19 @@ void init_light1()
 
  	glLightfv(GL_LIGHT1, GL_AMBIENT, fLowLight);
  	glLightfv(GL_LIGHT1, GL_DIFFUSE, fBrightLight);
- 	glLightfv(GL_LIGHT1, GL_SPECULAR, fLowLight);
-
+ 	glLightfv(GL_LIGHT1, GL_SPECULAR, fBrightLight);
  	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
- 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
- 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
- 	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
+
+// 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
+//	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
+//	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
 }
 
 void init_lights()
 {
 	glEnable(GL_LIGHTING);        //启动光照
 
-	init_light0();
+//	init_light0();
 	init_light1();
 
 	glEnable(GL_COLOR_MATERIAL);
@@ -196,12 +197,14 @@ void init_ball()
 
 void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d)
 {
-	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_2D);
+//	glEnable(GL_TEXTURE_2D);
 //	glBindTexture(GL_TEXTURE_2D, textures[AUDIENCE_TEXTURE]);
 	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	glEnable(GL_NORMALIZE);
 	glBegin(GL_QUADS);
         // //front
         // glVertex3f(x-w, y+h, z+d);
@@ -246,47 +249,52 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 	// 		glVertex3f(x0, y0, z0);
 	// 	}
 	// }
-
+#ifdef PIECES
 	float xFrom =  x - w;
 	float xTo = x + w;
 	float yFrom = z - d;
 	float yTo =  z + d;
-	glNormal3f(0.0, -1.0, 0.0);
+	glNormal3f(0.0, 1.0, 0.0);
 	for (int i = 0;i < 300;++i)
 	  for (int j = 0;j < 200;++j)
 	  {
-	    glTexCoord2f(i / 300.0f, j / 200.0f);
+//	    glTexCoord2f(i / 300.0f, j / 200.0f);
+	    glTexCoord2f(xFrom + (xTo - xFrom) * i / 300.0f,
+			 yFrom + (yTo - yFrom) * j / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
 			   0.0,
 			   yFrom + (yTo - yFrom) * j / 200.0f);
-	    glTexCoord2f( i / 300.0f, (j + 1) / 200.0f);
+//	    glTexCoord2f( i / 300.0f, (j + 1) / 200.0f);
+	    glTexCoord2f(xFrom + (xTo - xFrom) * i / 300.0f,
+	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-	    glTexCoord2f((i + 1) / 300.0f, (j + 1) / 200.0f);
+//	    glTexCoord2f((i + 1) / 300.0f, (j + 1) / 200.0f);
+	    glTexCoord2f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
+			 yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-	    glTexCoord2f((i + 1) / 300.0f, j / 200.0f);
+//	    glTexCoord2f((i + 1) / 300.0f, j / 200.0f);
+	    glTexCoord2f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
+			 yFrom + (yTo - yFrom) * j / 200.0f);
 	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
 	               0.0,
 	               yFrom + (yTo - yFrom) * j / 200.0f);
 	  }
-	cout << x - w << endl
-	     << x + w << endl
-	     << y + h << endl;
-
-	/* Front  whole */
-	// glNormal3f(0.0f, 1.0f, 0.0f);
-	// glTexCoord2f(0.0, 0.0);
-        // glVertex3f(x-w, y+h, z+d);
-	// glTexCoord2f(1.0, 0.0);
-        // glVertex3f(x+w, y+h, z+d);
-	// glTexCoord2f(1.0, 1.0);
-        // glVertex3f(x+w, y+h, z-d);
-	// glTexCoord2f(0.0, 1.0);
-        // glVertex3f(x-w, y+h, z-d);
-
+#else
+//	Front  whole
+	glNormal3f(0.0f, 1.0f, 0.0f);
+	glTexCoord2f(0.0, 0.0);
+        glVertex3f(x-w, y+h, z+d);
+	glTexCoord2f(1.0, 0.0);
+        glVertex3f(x+w, y+h, z+d);
+	glTexCoord2f(1.0, 1.0);
+        glVertex3f(x+w, y+h, z-d);
+	glTexCoord2f(0.0, 1.0);
+        glVertex3f(x-w, y+h, z-d);
+#endif
         // //left
         // glVertex3f(x-w, y+h, z+d);
         // glVertex3f(x-w, y-h, z+d);
@@ -494,7 +502,7 @@ void draw_boards()
 
 void set_lights()
 {
-	glLightfv(GL_LIGHT0, GL_POSITION, fAllPos);
+	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
 
 // //	glLightfv(GL_LIGHT0, GL_POSITION, fLightPos);
 // //	glLightfv(GL_LIGHT0, GL_POSITION, fSpotPos);
@@ -504,10 +512,10 @@ void set_lights()
 // 	glLightfv(GL_LIGHT1, GL_AMBIENT, fLowLight);
 // 	glLightfv(GL_LIGHT1, GL_DIFFUSE, fBrightLight);
 // 	glLightfv(GL_LIGHT1, GL_SPECULAR, fLowLight);
-// 	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
-// 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
-// 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
-// //	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
+ 	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
+ 	glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 40);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, fSpotDirection);
+	glLightf( GL_LIGHT1 , GL_SPOT_EXPONENT , 2); 
 
 // //	glLightfv(GL_LIGHT1, GL_POSITION, fLightPos);
 // //	glLightfv(GL_LIGHT1, GL_POSITION, fSpotPos);
