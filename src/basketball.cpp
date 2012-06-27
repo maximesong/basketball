@@ -25,6 +25,29 @@ GLfloat fVeryLowLight[] = { 0.05f, 0.05f, 0.05f, 1.0f };
 GLfloat fStrongLight[] = {0.8f, 0.8f, 0.8f, 1.0f };
 GLfloat fBrightLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
+GLboolean ambientShadowAvailable = GL_FALSE;
+GLboolean npotTexturesAvailable = GL_FALSE;
+GLboolean controlCamera = GL_TRUE;      // xyz keys will control lightpos
+GLboolean noShadows = GL_FALSE;         // normal lighting
+GLboolean showShadowMap = GL_FALSE;     // show the shadowmap texture
+GLdouble cameraZoom = 0.3;
+
+GLfloat factor = 4.0f;                  // for polygon offset
+
+GLuint shadowTextureID;
+
+GLint maxTexSize;                       // maximum allowed size for 1D/2D texture
+GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f};
+GLfloat diffuseLight[] = { 0.7f, 0.7f, 0.7f, 1.0f};
+GLfloat noLight[]      = { 0.0f, 0.0f, 0.0f, 1.0f};
+
+
+GLint windowWidth = 800;               // window size
+GLint windowHeight = 600;
+GLint shadowWidth = 800;               // set based on window size
+GLint shadowHeight = 600;
+M3DMatrix44f textureMatrix;
+
 int light0_on;
 
 Board *board;
@@ -57,6 +80,10 @@ Phonon::MediaObject *player;
 void init_textures();
 void init_lights();
 void init_ball();
+void init_shadow();
+void RegenerateShadowMap();
+void SetupRC();
+
 void init()
 {
 #ifdef __linux__
@@ -68,10 +95,11 @@ void init()
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
-
+	SetupRC();
 	init_lights();
 	init_textures();
 	init_ball();
+	init_shadow();
 }
 
 void init_textures()
@@ -168,7 +196,7 @@ void init_shadow()
 
 	M3DVector4f pPlane;
 	m3dGetPlaneEquation(pPlane, vPoints[0], vPoints[1], vPoints[2]);
-	m3dMakePlanarShadowMatrix(mShadowMatrix, pPlane, fLightPos);
+	m3dMakePlanarShadowMatrix(mShadowMatrix, pPlane, fSpotPos);
 }
 
 void init_ball()
@@ -211,23 +239,23 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 
 	glEnable(GL_NORMALIZE);
 	glBegin(GL_QUADS);
-        // //front
-        // glVertex3f(x-w, y+h, z+d);
-        // glVertex3f(x-w, y-h, z+d);
-        // glVertex3f(x+w, y-h, z+d);
-        // glVertex3f(x+w, y+h, z+d);
+        //front
+        glVertex3f(x-w, y+h, z+d);
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y+h, z+d);
 
-        // //bottom
-        // glVertex3f(x-w, y-h, z+d);
-        // glVertex3f(x+w, y-h, z+d);
-        // glVertex3f(x+w, y-h, z-d);
-        // glVertex3f(x-w, y-h, z-d);
+        //bottom
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x-w, y-h, z-d);
 
-        // //back
-        // glVertex3f(x+w, y+h, z-d);
-        // glVertex3f(x+w, y-h, z-d);
-        // glVertex3f(x-w, y-h, z-d);
-        // glVertex3f(x-w, y+h, z-d);
+        //back
+        glVertex3f(x+w, y+h, z-d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x-w, y-h, z-d);
+        glVertex3f(x-w, y+h, z-d);
     
         //top, all point up
 	// glNormal3f(0.0f, 1.0f, 0.0f);
@@ -238,7 +266,6 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 	// double y0 = y + h;
 	// double dx = 0.01 * x_diff;
 	// double dz = 0.01 * z_diff;
-
 	// for (double ux = 0; ux < 1; ux += 0.01) {
 	// 	double x0 = x_from + x_diff * ux;
 	// 	for (double uz = 0; uz < 1; uz += 0.01) {
@@ -292,17 +319,17 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 	glTexCoord2f(0.0, 1.0);
         glVertex3f(x-w, y+h, z-d);
 #endif
-        // //left
-        // glVertex3f(x-w, y+h, z+d);
-        // glVertex3f(x-w, y-h, z+d);
-        // glVertex3f(x-w, y-h, z-d);
-        // glVertex3f(x-w, y+h, z-d);
+        //left
+        glVertex3f(x-w, y+h, z+d);
+        glVertex3f(x-w, y-h, z+d);
+        glVertex3f(x-w, y-h, z-d);
+        glVertex3f(x-w, y+h, z-d);
 
-        // //right
-        // glVertex3f(x+w, y+h, z+d);
-        // glVertex3f(x+w, y-h, z+d);
-        // glVertex3f(x+w, y-h, z-d);
-        // glVertex3f(x+w, y+h, z-d);
+        //right
+        glVertex3f(x+w, y+h, z+d);
+        glVertex3f(x+w, y-h, z+d);
+        glVertex3f(x+w, y-h, z-d);
+        glVertex3f(x+w, y+h, z-d);
  
         glEnd();
 	glDisable(GL_TEXTURE_2D);
@@ -418,6 +445,7 @@ void draw_ball()
 
  	glTranslatef(ball.x, ball.y, ball.z);
 	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
+	init_shadow();
         // Draw shadows first
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
@@ -496,6 +524,7 @@ void display()
 		GL_STENCIL_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
  	if (eyey > 2) {
  		eyey -= 0.05;
  	}
@@ -578,6 +607,240 @@ void processNormalKeys(unsigned char key,int,int)
 		}
 }
 
+// Called to regenerate the shadow map
+void RegenerateShadowMap()
+{
+	GLfloat lightToSceneDistance, nearPlane, fieldOfView;
+	GLfloat lightModelview[16], lightProjection[16];
+	GLfloat sceneBoundingRadius = 30.0f; // based on objects in scene
+
+	// Save the depth precision for where it's useful
+	lightToSceneDistance = sqrt(fSpotPos[0] * fSpotPos[0] + 
+				    fSpotPos[1] * fSpotPos[1] + 
+				    fSpotPos[2] * fSpotPos[2]);
+	nearPlane = lightToSceneDistance - sceneBoundingRadius;
+	// Keep the scene filling the depth texture
+	fieldOfView = 
+		(GLfloat)m3dRadToDeg(2.0f * 
+				     atan(sceneBoundingRadius /
+					  lightToSceneDistance));
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fieldOfView, 1.0f, nearPlane, 
+		       nearPlane + (2.0f * sceneBoundingRadius));
+	glGetFloatv(GL_PROJECTION_MATRIX, lightProjection);
+	// Switch to light's point of view
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(fSpotPos[0], fSpotPos[1], fSpotPos[2], 
+		  ball.x, 0.0f, ball.z, 0.0f, 1.0f, 0.0f);
+	glGetFloatv(GL_MODELVIEW_MATRIX, lightModelview);
+	glViewport(0, 0, shadowWidth, shadowHeight);
+
+	// Clear the depth buffer only
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	// All we care about here is resulting depth values
+	glShadeModel(GL_FLAT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_COLOR_MATERIAL);
+	glDisable(GL_NORMALIZE);
+	glColorMask(0, 0, 0, 0);
+
+	// Overcome imprecision
+	glEnable(GL_POLYGON_OFFSET_FILL);
+
+	// Draw objects in the scene except base plane
+	// which never shadows anything
+	draw_ball();
+	draw_boards();
+
+	// Copy depth values into depth texture
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
+			 0, 0, shadowWidth, shadowHeight, 0);
+
+	// Restore normal drawing state
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_NORMALIZE);
+	glColorMask(1, 1, 1, 1);
+	glDisable(GL_POLYGON_OFFSET_FILL);
+
+	// Set up texture matrix for shadow map projection,
+	// which will be rolled into the eye linear
+	// texture coordinate generation plane equations
+	M3DMatrix44f tempMatrix;
+	m3dLoadIdentity44(tempMatrix);
+	m3dTranslateMatrix44(tempMatrix, 0.5f, 0.5f, 0.5f);
+	m3dScaleMatrix44(tempMatrix, 0.5f, 0.5f, 0.5f);
+	m3dMatrixMultiply44(textureMatrix, tempMatrix, lightProjection);
+	m3dMatrixMultiply44(tempMatrix, textureMatrix, lightModelview);
+	// transpose to get the s, t, r, and q rows for plane equations
+	m3dTransposeMatrix44(textureMatrix, tempMatrix);
+}
+
+
+void SetupRC()
+{
+	fprintf(stdout, "Shadow Mapping Demo\n\n");
+
+	// Make sure required functionality is available!
+	if (!GLEE_VERSION_1_4 && !GLEE_ARB_shadow)
+	{
+		fprintf(stderr, "Neither OpenGL 1.4 nor GL_ARB_shadow"
+                        " extension is available!\n");
+		exit(0);
+	}
+
+	// Check for optional extensions
+	if (GLEE_ARB_shadow_ambient)
+	{
+		ambientShadowAvailable = GL_TRUE;
+	}
+	else
+	{
+		fprintf(stderr, "GL_ARB_shadow_ambient extension not available!\n");
+		fprintf(stderr, "Extra ambient rendering pass will be required.\n\n");
+	}
+
+	if (GLEE_VERSION_2_0 || GLEE_ARB_texture_non_power_of_two)
+	{
+		npotTexturesAvailable = GL_TRUE;
+	}
+	else
+	{
+		fprintf(stderr, "Neither OpenGL 2.0 nor GL_ARB_texture_non_power_of_two extension\n");
+		fprintf(stderr, "is available!  Shadow map will be lower resolution (lower quality).\n\n");
+	}
+
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+
+	fprintf(stdout, "Controls:\n");
+	fprintf(stdout, "\tRight-click for menu\n\n");
+	fprintf(stdout, "\tx/X\t\tMove +/- in x direction\n");
+	fprintf(stdout, "\ty/Y\t\tMove +/- in y direction\n");
+	fprintf(stdout, "\tz/Z\t\tMove +/- in z direction\n\n");
+	fprintf(stdout, "\tf/F\t\tChange polygon offset factor +/-\n\n");
+	fprintf(stdout, "\tq\t\tExit demo\n\n");
+    
+	// Black background
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+
+	// Hidden surface removal
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glPolygonOffset(factor, 0.0f);
+
+	// Set up some lighting state that never changes
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_LIGHT0);
+
+	// Set up some texture state that never changes
+	glGenTextures(1, &shadowTextureID);
+	glBindTexture(GL_TEXTURE_2D, shadowTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+	if (ambientShadowAvailable)
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FAIL_VALUE_ARB, 
+				0.5f);
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+
+	RegenerateShadowMap();
+}
+
+void DrawModels(GLboolean)
+{
+	/* empty */
+}
+
+void RenderScene(void)
+{
+	// Track camera angle
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	GLdouble ar = (GLdouble)windowWidth / (GLdouble)windowHeight;
+	glFrustum(-ar * cameraZoom, ar * cameraZoom, -cameraZoom,
+		  cameraZoom, 1.0, 1000.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(eyex, eyey, eyez, 
+		  0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+	
+	glViewport(0, 0, windowWidth, windowHeight);
+    
+	// Track light position
+//	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
+	// Clear the window with current clearing color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (!ambientShadowAvailable)
+	{
+		GLfloat lowAmbient[4] = {0.1f, 0.1f, 0.1f, 1.0f};
+		GLfloat lowDiffuse[4] = {0.35f, 0.35f, 0.35f, 1.0f};
+
+		// Because there is no support for an "ambient"
+		// shadow compare fail value, we'll have to
+		// draw an ambient pass first...
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lowAmbient);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lowDiffuse);
+
+		// Draw objects in the scene, including base plane
+		DrawModels(GL_TRUE);
+
+		// Enable alpha test so that shadowed fragments are discarded
+		glAlphaFunc(GL_GREATER, 0.9f);
+		glEnable(GL_ALPHA_TEST);
+	}
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+
+        // Set up shadow comparison
+        glEnable(GL_TEXTURE_2D);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, 
+                        GL_COMPARE_R_TO_TEXTURE);
+
+        // Set up the eye plane for projecting the shadow map on the scene
+        glEnable(GL_TEXTURE_GEN_S);
+        glEnable(GL_TEXTURE_GEN_T);
+        glEnable(GL_TEXTURE_GEN_R);
+        glEnable(GL_TEXTURE_GEN_Q);
+        glTexGenfv(GL_S, GL_EYE_PLANE, &textureMatrix[0]);
+        glTexGenfv(GL_T, GL_EYE_PLANE, &textureMatrix[4]);
+        glTexGenfv(GL_R, GL_EYE_PLANE, &textureMatrix[8]);
+        glTexGenfv(GL_Q, GL_EYE_PLANE, &textureMatrix[12]);
+
+        // Draw objects in the scene, including base plane
+        DrawModels(GL_TRUE);
+
+        glDisable(GL_ALPHA_TEST);
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_TEXTURE_GEN_S);
+        glDisable(GL_TEXTURE_GEN_T);   
+	glDisable(GL_TEXTURE_GEN_R); 
+	glDisable(GL_TEXTURE_GEN_Q);  
+
+	if (glGetError() != GL_NO_ERROR)
+		fprintf(stderr, "GL Error!\n");
+
+	// Flush drawing commands
+	glutSwapBuffers();
+}
+
 int main(int argc, char *argv[])
 {
 #ifdef __linux__
@@ -589,6 +852,7 @@ int main(int argc, char *argv[])
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("Basketball Demo");
 	init();
+//	glutDisplayFunc(RenderScene);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(processNormalKeys);
 	glutReshapeFunc(reshape);
