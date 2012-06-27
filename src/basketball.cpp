@@ -83,6 +83,8 @@ void init_ball();
 void init_shadow();
 void RegenerateShadowMap();
 void SetupRC();
+void set_lights();
+
 
 void init()
 {
@@ -192,7 +194,7 @@ void init_shadow()
 
 	M3DVector3f vPoints[3] = {{ 0.0f, 0.3f, 0.0f },
 				  { 10.0f, 0.3f, 0.0f },
-				  { 5.0f, 0.4f, -5.0f }};
+				  { 5.0f, 0.3f, -5.0f }};
 
 	M3DVector4f pPlane;
 	m3dGetPlaneEquation(pPlane, vPoints[0], vPoints[1], vPoints[2]);
@@ -439,14 +441,10 @@ void spot_example()
 	glPopMatrix();
 }
 
-void draw_ball()
+void draw_ball_shadow()
 {
- 	glPushMatrix();
-
- 	glTranslatef(ball.x, ball.y, ball.z);
-	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
 	init_shadow();
-        // Draw shadows first
+
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
         glDisable(GL_TEXTURE_2D);
@@ -456,26 +454,40 @@ void draw_ball()
 
         glPushMatrix();
 	glMultMatrixf(mShadowMatrix);
+ 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
+		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+	set_lights();
+ 	glTranslatef(ball.x, ball.y, ball.z);
         glColor4f(0.00f, 0.00f, 0.00f, .6f);  // Shadow color
 	gltDrawSphere(ball.r, 40, 20);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        glPopMatrix();
+        glPopMatrix();	
 
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_BLEND);
+}
+
+void draw_ball()
+{
+ 	glPushMatrix();
+
+// 	glTranslatef(ball.x, ball.y, ball.z);
+	glBindTexture(GL_TEXTURE_2D, textures[BALL_TEXTURE]);
 
         glEnable(GL_LIGHTING);
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
+ 	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
+		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
+	set_lights();
+ 	glTranslatef(ball.x, ball.y, ball.z);
 	glRotatef(ball.rotation, ball.rx, ball.ry, ball.rz);
 
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fNoLight);
 	gltDrawSphere(ball.r, 40, 20);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, fBrightLight);
-
 //	cout << ball.rotation << "\t" << ball.x << 
 //		"\t" << ball.y << "\t" << ball.z << endl;
-
  	glPopMatrix();
 }
 
@@ -528,6 +540,7 @@ void display()
  	if (eyey > 2) {
  		eyey -= 0.05;
  	}
+	glPushMatrix();
  	gluLookAt(eyex + ball.x, eyey, eyez + ball.z, 
 		  0.9 * ball.x, -eyey, 0.9 * ball.z ,0, 1, 0);
 //	gluLookAt(eyex, eyey, eyez, 
@@ -539,9 +552,19 @@ void display()
 	draw_boards();
  	drawGround(0, -0.3, 0, 28, 0.3, 15);
  	drawGym(0, 2.5, 0, 28, 2.5, 15);
+	glPopMatrix();
  	if (ball.is_hit)
 		play_sound();
-	draw_ball();
+
+	 glPushMatrix();
+	 draw_ball_shadow();
+	 glPopMatrix();
+
+	 glPushMatrix();
+	 draw_ball();
+	 glPopMatrix();
+
+
 	glutSwapBuffers();
 }
 
