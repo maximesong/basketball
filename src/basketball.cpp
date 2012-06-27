@@ -145,11 +145,11 @@ void init_lights()
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, 
 		      GL_SEPARATE_SPECULAR_COLOR);    
 
-//	glCullFace(GL_BACK);        //剔除背面
-//	glEnable(GL_CULL_FACE);        //启动剔除
-//	glDepthFunc(GL_LEQUAL);        //深度检测为小于等于
-//	glEnable(GL_DEPTH_TEST);    //启动深度检测
-//	glFrontFace(GL_CCW);        //定义逆时针为正面
+	glCullFace(GL_BACK);        //剔除背面
+	glEnable(GL_CULL_FACE);        //启动剔除
+	glDepthFunc(GL_LEQUAL);        //深度检测为小于等于
+	glEnable(GL_DEPTH_TEST);    //启动深度检测
+	glFrontFace(GL_CCW);        //定义逆时针为正面
 }
 
 void init_shadow()
@@ -222,68 +222,70 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
         // glVertex3f(x-w, y+h, z-d);
     
         //top, all point up
-// 	glNormal3f(0.0f, 1.0f, 0.0f);
-// 	double x_from = x - w;
-// 	double x_diff = 2 * w;
-// 	double z_from = z - d;
-// 	double z_diff = 2 * z;
-// 	double y0 = y + h;
-// 	double dx = 0.01 * x_diff;
-// 	double dz = 0.01 * z_diff;
+	// glNormal3f(0.0f, 1.0f, 0.0f);
+	// double x_from = x - w;
+	// double x_diff = 2 * w;
+	// double z_from = z - d;
+	// double z_diff = 2 * z;
+	// double y0 = y + h;
+	// double dx = 0.01 * x_diff;
+	// double dz = 0.01 * z_diff;
 
-// 	for (double ux = 0; ux < 1; ux += 0.01) {
-// 		double x0 = x_from + x_diff * ux;
-// 		for (double uz = 0; uz < 1; uz += 0.01) {
-// 			double z0 = z_from + z_from * uz;
-// //			cout << z0 << "\t" << x0 << endl;
+	// for (double ux = 0; ux < 1; ux += 0.01) {
+	// 	double x0 = x_from + x_diff * ux;
+	// 	for (double uz = 0; uz < 1; uz += 0.01) {
+	// 		double z0 = z_from + z_from * uz;
+	// 		cout << z0 << "\t" << x0 << endl;
+	// 		glTexCoord2f(ux, uz);
+	// 		glVertex3f(x0, y0, z0 + dz);
+	// 		glTexCoord2f(ux + 0.01, uz);
+	// 		glVertex3f(x0 + dx, y0, z0 + dz);
+	// 		glTexCoord2f(ux + 0.01, uz + 0.01);
+	// 		glVertex3f(x0 + dx, y0, z0);
+	// 		glTexCoord2f(ux, uz + 0.01);
+	// 		glVertex3f(x0, y0, z0);
+	// 	}
+	// }
 
-// 			glTexCoord2f(ux, uz);
-// 			glVertex3f(x0, y0, z0 + dz);
-// 			glTexCoord2f(ux + 0.01, uz);
-// 			glVertex3f(x0 + dx, y0, z0 + dz);
-// 			glTexCoord2f(ux + 0.01, uz + 0.01);
-// 			glVertex3f(x0 + dx, y0, z0);
-// 			glTexCoord2f(ux, uz + 0.01);
-// 			glVertex3f(x0, y0, z0);
-// 		}
-// 	}
-	// 	float xFrom =  x - w;
-	// 	float xTo = x + w;
-	// 	float yFrom = z - w;
-	// 	float yTo =  z + w;
-	// 	glNormal3f(0.0, -1.0, 0.0);
-	// for (int i = 0;i < 200;++i)
-	//   for (int j = 0;j < 100;++j)
-	//   {
-	//     glTexCoord2f(j / 200.0f, i / 100.0f);
-	//     glVertex3f(xFrom + (xTo - xFrom) * i / 100.0f,
-	// 		   0.0,
-	// 		   yFrom + (yTo - yFrom) * j / 200.0f);
-	//     glTexCoord2f((j + 1) / 200.0f, i / 100.0f);
-	//     glVertex3f(xFrom + (xTo - xFrom) * i / 100.0f,
-	//                0.0,
-	//                yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-	//     glTexCoord2f((j + 1) / 200.0f, (i + 1) / 100.0f);
-	//     glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 100.0f,
-	//                0.0,
-	//                yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
-	//     glTexCoord2f(j / 200.0f, (i + 1) / 100.0f);
-	//     glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 100.0f,
-	//                0.0,
-	//                yFrom + (yTo - yFrom) * j / 200.0f);
-	//   }
-	// cout << x - w << endl
-	//      << x + w << endl
-	//      << y + h << endl;
-	glNormal3f(0.0f, 1.0f, 0.0f);
-	glTexCoord2f(0.0, 0.0);
-        glVertex3f(x-w, y+h, z+d);
-	glTexCoord2f(1.0, 0.0);
-        glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(1.0, 1.0);
-        glVertex3f(x+w, y+h, z-d);
-	glTexCoord2f(0.0, 1.0);
-        glVertex3f(x-w, y+h, z-d);
+	float xFrom =  x - w;
+	float xTo = x + w;
+	float yFrom = z - d;
+	float yTo =  z + d;
+	glNormal3f(0.0, -1.0, 0.0);
+	for (int i = 0;i < 300;++i)
+	  for (int j = 0;j < 200;++j)
+	  {
+	    glTexCoord2f(i / 300.0f, j / 200.0f);
+	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
+			   0.0,
+			   yFrom + (yTo - yFrom) * j / 200.0f);
+	    glTexCoord2f( i / 300.0f, (j + 1) / 200.0f);
+	    glVertex3f(xFrom + (xTo - xFrom) * i / 300.0f,
+	               0.0,
+	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
+	    glTexCoord2f((i + 1) / 300.0f, (j + 1) / 200.0f);
+	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
+	               0.0,
+	               yFrom + (yTo - yFrom) * (j + 1) / 200.0f);
+	    glTexCoord2f((i + 1) / 300.0f, j / 200.0f);
+	    glVertex3f(xFrom + (xTo - xFrom) * (i + 1) / 300.0f,
+	               0.0,
+	               yFrom + (yTo - yFrom) * j / 200.0f);
+	  }
+	cout << x - w << endl
+	     << x + w << endl
+	     << y + h << endl;
+
+	/* Front  whole */
+	// glNormal3f(0.0f, 1.0f, 0.0f);
+	// glTexCoord2f(0.0, 0.0);
+        // glVertex3f(x-w, y+h, z+d);
+	// glTexCoord2f(1.0, 0.0);
+        // glVertex3f(x+w, y+h, z+d);
+	// glTexCoord2f(1.0, 1.0);
+        // glVertex3f(x+w, y+h, z-d);
+	// glTexCoord2f(0.0, 1.0);
+        // glVertex3f(x-w, y+h, z-d);
 
         // //left
         // glVertex3f(x-w, y+h, z+d);
@@ -305,6 +307,7 @@ void drawGround(GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLfloat h, GLfloat d
 void drawGym(GLfloat x, GLfloat y, GLfloat z, 
 	     GLfloat w, GLfloat h, GLfloat d)
 {
+	glEnable(GL_TEXTURE_2D);
 //	glBindTexture(GL_TEXTURE_2D, textures[GROUND_TEXTURE]);
 	glBindTexture(GL_TEXTURE_2D, textures[AUDIENCE_TEXTURE]);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -380,6 +383,7 @@ glVertex3f(x-w, y-h, z-d);
         glVertex3f(x+w, y+h, z+d);
  
         glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 
