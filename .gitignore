@@ -7,3 +7,8 @@ model/*
 preparation/*
 release*/*
 Makefile
+*.pdf
+*.avi
+*.log
+*.aux
+*.zip
