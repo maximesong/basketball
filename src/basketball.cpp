@@ -95,7 +95,7 @@ void init()
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
 
-	SetupRC();
+//	SetupRC();
 	init_lights();
 	init_textures();
 	init_ball();
